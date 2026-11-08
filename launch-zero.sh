@@ -19,3 +19,4 @@ else
     echo "Opened Obsidian URI for: $VAULT_DIR"
   }
 fi
+

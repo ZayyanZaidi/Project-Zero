@@ -2,6 +2,23 @@ const { Plugin, ItemView, MarkdownRenderer, Notice } = require("obsidian");
 
 const BRAIN_VIEW_TYPE = "project-zero-view";
 
+function copyToClipboard(text) {
+  try {
+    const { clipboard } = window.require("electron");
+    if (clipboard && clipboard.writeText) {
+      clipboard.writeText(text);
+      return true;
+    }
+  } catch (e) {
+    // Fallback to Web API
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text);
+    return true;
+  }
+  return false;
+}
+
 class BrainAssistantView extends ItemView {
   constructor(leaf, plugin) {
     super(leaf);
@@ -37,7 +54,7 @@ class BrainAssistantView extends ItemView {
     this.statusPill = header.createDiv({ cls: "brain-status-pill standby" });
     this.statusPill.innerHTML = `<span class="brain-status-dot"></span> <span class="status-text">Standby</span>`;
 
-    // 2. Streamlined Single-Bar Controls (Mode Tabs + Context Dropdown)
+    // 2. Streamlined Controls Row
     const controlsRow = container.createDiv({ cls: "brain-controls-row" });
     const modeTabs = controlsRow.createDiv({ cls: "brain-mode-toggle" });
 
@@ -56,15 +73,15 @@ class BrainAssistantView extends ItemView {
     this.contextSelect = controlsRow.createEl("select", { cls: "brain-context-select" });
     this.contextSelect.onchange = () => {
       this.selectedContext = this.contextSelect.value;
-      new Notice(`Target: ${this.selectedContext || 'All'}`);
+      new Notice(`Context: ${this.selectedContext || 'All'}`);
     };
     await this.populateContextDropdown();
 
-    // 3. Compact Action Chips (only 3 high-yield chips)
+    // 3. High-Yield Action Chips
     this.quickActions = container.createDiv({ cls: "brain-quick-actions" });
     this.renderQuickActions();
 
-    // 4. Breathable Chat Message List
+    // 4. Chat Message List (Full User-Selectable Text)
     this.chatList = container.createDiv({ cls: "brain-chat-list" });
     this.addWelcomeMessage();
 
@@ -72,7 +89,7 @@ class BrainAssistantView extends ItemView {
     const inputArea = container.createDiv({ cls: "brain-input-container" });
     this.textarea = inputArea.createEl("textarea", {
       cls: "brain-textarea",
-      attr: { placeholder: "Ask Brain, review code, or request a quiz... (Ctrl+Enter)" }
+      attr: { placeholder: "Ask Project-Zero, audit architecture, or request a course quiz... (Ctrl+Enter)" }
     });
 
     this.textarea.addEventListener("keydown", (e) => {
@@ -140,20 +157,20 @@ class BrainAssistantView extends ItemView {
     }
     await this.populateContextDropdown();
     this.renderQuickActions();
-    new Notice(`Switched to ${mode === 'work' ? 'Projects Mode' : 'Course Study Mode'}`);
+    new Notice(`Mode: ${mode === 'work' ? 'Project Engineering Mode' : 'Course Study Mode'}`);
   }
 
   renderQuickActions() {
     this.quickActions.empty();
     if (this.currentMode === "work") {
       this.createSyncPill("⚡ Sync Code");
-      this.createActionPill("📋 Next Steps", () => {
-        const target = this.selectedContext ? `for ${this.selectedContext}` : "across active codebases";
-        return `Review recent changes and give me the top 3 actionable next steps ${target}.`;
+      this.createActionPill("📋 Technical Review", () => {
+        const target = this.selectedContext ? `for ${this.selectedContext}` : "for Project-Zero";
+        return `Perform a deep technical architectural review ${target}. Analyze code implementation, memory & CPU efficiency, potential bottlenecks, and concrete technical improvements. Do not give generic project management advice.`;
       });
-      this.createActionPill("🔍 Bug Audit", () => {
-        const target = this.selectedContext ? `in ${this.selectedContext}` : "";
-        return `Audit code changes and flag edge cases or bugs ${target}.`;
+      this.createActionPill("🔍 Bug & Edge-Case Audit", () => {
+        const target = this.selectedContext ? `in ${this.selectedContext}` : "in active codebases";
+        return `Audit implementation details and flag specific edge cases, unhandled exceptions, and performance leaks ${target}.`;
       });
     } else {
       this.createActionPill("🎯 3-Q Quiz", () => {
@@ -162,7 +179,7 @@ class BrainAssistantView extends ItemView {
       });
       this.createActionPill("📖 Explain Concept", () => {
         const target = this.selectedContext ? `for ${this.selectedContext}` : "";
-        return `Explain a core theoretical or algorithmic concept ${target} simply with clear code examples.`;
+        return `Explain a core theoretical or algorithmic concept ${target} with concrete code snippets.`;
       });
       this.createActionPill("⚡ Flashcards", () => {
         const target = this.selectedContext ? `for ${this.selectedContext}` : "";
@@ -209,8 +226,8 @@ class BrainAssistantView extends ItemView {
 
   addWelcomeMessage() {
     const welcome = this.currentMode === "work"
-      ? "### 💻 Projects Mode\nTracking software codebases. Select a codebase above or prompt for advice."
-      : "### 📚 Course Study Mode\nDedicated to coursework & exam preparation. Select a course above to generate quizzes, concept breakdowns, or flashcards.";
+      ? "### 💻 Technical Engineering Mode\nSpecialized in code audits, systems architecture, and memory efficiency. Select a codebase above or ask a technical question."
+      : "### 📚 Course Study Mode\nDedicated to coursework and exam prep. Select a course above to generate quizzes, concept breakdowns, or flashcards.";
     this.appendMessage("assistant", welcome);
   }
 
@@ -220,7 +237,7 @@ class BrainAssistantView extends ItemView {
     const textEl = this.statusPill.querySelector(".status-text");
     if (textEl) textEl.textContent = text;
     if (this.plugin.statusBarItem) {
-      this.plugin.statusBarItem.setText(`🧠 Brain: ${text}`);
+      this.plugin.statusBarItem.setText(`🧠 Project-Zero: ${text}`);
     }
 
     if (this.stopBtn) {
@@ -235,7 +252,7 @@ class BrainAssistantView extends ItemView {
   appendMessage(role, text) {
     const msg = this.chatList.createDiv({ cls: `brain-msg ${role}` });
     const header = msg.createDiv({ cls: "brain-msg-header" });
-    header.textContent = role === "user" ? "YOU" : `BRAIN (${this.currentMode.toUpperCase()})`;
+    header.textContent = role === "user" ? "YOU" : `PROJECT-ZERO (${this.currentMode.toUpperCase()})`;
 
     const content = msg.createDiv({ cls: "brain-msg-content" });
 
@@ -243,9 +260,11 @@ class BrainAssistantView extends ItemView {
       MarkdownRenderer.render(this.plugin.app, text, content, "/", this);
       const actions = msg.createDiv({ cls: "brain-msg-actions" });
 
-      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy" });
+      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy Text" });
       copyBtn.onclick = () => {
-        navigator.clipboard.writeText(text);
+        copyToClipboard(text);
+        copyBtn.textContent = "✅ Copied!";
+        setTimeout(() => { copyBtn.textContent = "📋 Copy Text"; }, 2000);
         new Notice("Copied to clipboard!");
       };
 
@@ -277,7 +296,7 @@ class BrainAssistantView extends ItemView {
         filename = `Suggestions/${projPrefix}${date}-${time}.md`;
       }
 
-      const header = `# Brain Note\n*Mode: ${this.currentMode.toUpperCase()} | Target: ${this.selectedContext || 'General'} | ${new Date().toLocaleString()}*\n\n`;
+      const header = `# Project-Zero Note\n*Mode: ${this.currentMode.toUpperCase()} | Target: ${this.selectedContext || 'General'} | ${new Date().toLocaleString()}*\n\n`;
       await this.plugin.app.vault.create(filename, header + text);
       new Notice(`Note created: ${filename}`);
     } catch (e) {
@@ -294,13 +313,20 @@ class BrainAssistantView extends ItemView {
     this.isGenerating = true;
     this.sendBtn.disabled = true;
 
+    // Check if prompt references Project-Zero or if a project is selected
+    let targetProject = this.selectedContext;
+    const lower = text.toLowerCase();
+    if (!targetProject && (lower.includes("project-zero") || lower.includes("project zero") || lower.includes("own folder") || lower.includes("this project") || lower.includes("itself"))) {
+      targetProject = "Project-Zero";
+    }
+
     let contextPrompt = text;
-    if (this.currentMode === "work" && this.selectedContext) {
+    if (this.currentMode === "work" && targetProject) {
       try {
-        const file = this.plugin.app.vault.getAbstractFileByPath(`Projects/${this.selectedContext}.md`);
+        const file = this.plugin.app.vault.getAbstractFileByPath(`Projects/${targetProject}.md`);
         if (file) {
           const content = await this.plugin.app.vault.read(file);
-          contextPrompt = `[Context from Projects/${this.selectedContext}.md]:\n${content.slice(0, 1500)}\n\n[User Request]:\n${text}`;
+          contextPrompt = `[Technical Architecture Profile of ${targetProject}]:\n${content}\n\n[User Technical Request]:\n${text}`;
         }
       } catch (e) {
         console.warn("Could not read project file", e);
@@ -310,7 +336,7 @@ class BrainAssistantView extends ItemView {
         const file = this.plugin.app.vault.getAbstractFileByPath(`Study/Courses/${this.selectedContext}/Syllabus.md`);
         if (file) {
           const content = await this.plugin.app.vault.read(file);
-          contextPrompt = `[Syllabus for Course: ${this.selectedContext}]:\n${content.slice(0, 1500)}\n\n[Study Request]:\n${text}`;
+          contextPrompt = `[Course Syllabus for ${this.selectedContext}]:\n${content}\n\n[Study Request]:\n${text}`;
         }
       } catch (e) {
         console.warn("Could not read syllabus file", e);
@@ -319,7 +345,7 @@ class BrainAssistantView extends ItemView {
 
     const assistantMsg = this.chatList.createDiv({ cls: "brain-msg assistant" });
     const header = assistantMsg.createDiv({ cls: "brain-msg-header" });
-    header.textContent = `BRAIN (${this.currentMode.toUpperCase()})`;
+    header.textContent = `PROJECT-ZERO (${this.currentMode.toUpperCase()})`;
     const contentEl = assistantMsg.createDiv({ cls: "brain-msg-content" });
     contentEl.textContent = "Starting engine...";
 
@@ -333,8 +359,12 @@ class BrainAssistantView extends ItemView {
       contentEl.textContent = "";
 
       const systemPrompt = this.currentMode === "work"
-        ? "You are Brain, an offline advisor and project monitor inside an Obsidian vault. Keep answers concise, actionable, and formatted in clean GitHub Markdown."
-        : "You are Brain, an academic tutor helping the user study course concepts, prepare for exams, and solve practice problems. Explain clearly and format with clean markdown.";
+        ? `You are Project-Zero, an expert software systems architect, code auditor, and performance engineer running locally on an Intel i5 CPU with 8GB RAM.
+CRITICAL RULES:
+- NEVER give generic project management, agile, or corporate advice (e.g. "define goals", "set milestones", "daily standups", "improve communication").
+- ALWAYS provide deep, concrete technical analysis: examine code architecture, memory footprint, CPU thread utilization, algorithms, edge cases, error handling, and file-level implementation suggestions.
+- When reviewing Project-Zero, analyze its real offline stack: llama.cpp llama-server (AVX2, -t 2, -c 2048, --mmap), memory ceiling, Obsidian plugin lifecycle, bin/monitor.py read-only security barriers, and token streaming performance.`
+        : `You are Project-Zero, an academic computer science tutor helping the user master coursework and prepare for technical exams. Explain algorithms, data structures, and system design with concrete code examples, and generate challenging practice problems. Format in clean GitHub markdown.`;
 
       const messages = [
         { role: "system", content: systemPrompt },
@@ -350,9 +380,11 @@ class BrainAssistantView extends ItemView {
       });
 
       const actions = assistantMsg.createDiv({ cls: "brain-msg-actions" });
-      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy" });
+      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy Text" });
       copyBtn.onclick = () => {
-        navigator.clipboard.writeText(fullResponse);
+        copyToClipboard(fullResponse);
+        copyBtn.textContent = "✅ Copied!";
+        setTimeout(() => { copyBtn.textContent = "📋 Copy Text"; }, 2000);
         new Notice("Copied to clipboard!");
       };
 
@@ -384,24 +416,24 @@ class BrainPlugin extends Plugin {
 
     this.registerView(BRAIN_VIEW_TYPE, (leaf) => new BrainAssistantView(leaf, this));
 
-    this.addRibbonIcon("brain", "Brain Assistant Cockpit", () => {
+    this.addRibbonIcon("brain", "Project-Zero Cockpit", () => {
       this.activateView(false);
     });
 
     this.statusBarItem = this.addStatusBarItem();
-    this.statusBarItem.setText("🧠 Brain: Standby");
+    this.statusBarItem.setText("🧠 Project-Zero: Standby");
     this.statusBarItem.addClass("mod-clickable");
     this.statusBarItem.onclick = () => this.activateView(false);
 
     this.addCommand({
       id: "open-brain-sidebar",
-      name: "Open Brain Assistant in Sidebar",
+      name: "Open Project-Zero in Sidebar",
       callback: () => this.activateView(false)
     });
 
     this.addCommand({
       id: "open-brain-tab",
-      name: "Open Brain Assistant in Main Tab",
+      name: "Open Project-Zero in Main Tab",
       callback: () => this.activateView(true)
     });
 
@@ -411,7 +443,6 @@ class BrainPlugin extends Plugin {
       callback: () => this.stopServer()
     });
 
-    // Automatically open in sidebar on vault launch
     this.app.workspace.onLayoutReady(() => {
       this.activateView(false);
     });
@@ -500,7 +531,7 @@ class BrainPlugin extends Plugin {
 
     this.serverProcess = null;
     if (this.onServerStatusChange) this.onServerStatusChange("standby", "Standby");
-    new Notice("Brain Engine stopped. RAM released.");
+    new Notice("Project-Zero Engine stopped. RAM released.");
   }
 
   resetIdleTimer() {
