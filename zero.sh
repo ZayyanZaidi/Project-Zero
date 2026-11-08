@@ -37,8 +37,9 @@ case "${1:-start}" in
       -c "$CTX_SIZE" \
       -t "$THREADS" \
       -np "$PARALLEL" \
-      -b 512 \
-      -ub 256 \
+      -b 256 \
+      -ub 128 \
+      -tb 3 \
       -fa on \
       -ctk q8_0 \
       -ctv q8_0 \

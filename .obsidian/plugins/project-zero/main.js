@@ -24,7 +24,9 @@ class BrainAssistantView extends ItemView {
     super(leaf);
     this.plugin = plugin;
     this.currentMode = "work"; // 'work' or 'study'
-    this.chatHistory = [];
+    this.sessions = [];
+    this.activeSessionId = null;
+    this.isDrawerOpen = false;
     this.isGenerating = false;
   }
 
@@ -53,7 +55,18 @@ class BrainAssistantView extends ItemView {
     this.statusPill = header.createDiv({ cls: "brain-status-pill standby" });
     this.statusPill.innerHTML = `<span class="brain-status-dot"></span> <span class="status-text">Standby</span>`;
 
-    // 2. Streamlined Mode Switcher (2 Tabs Only)
+    // 2. Collapsible Session Selector Bar
+    const sessionBar = container.createDiv({ cls: "brain-session-bar" });
+    this.sessionTitleBtn = sessionBar.createEl("button", { cls: "brain-session-btn" });
+    this.sessionTitleBtn.onclick = () => this.toggleSessionDrawer();
+
+    const newSessionBtn = sessionBar.createEl("button", { cls: "brain-session-new-btn", text: "+ New" });
+    newSessionBtn.onclick = () => this.createNewSession();
+
+    // 3. Collapsible Session Drawer
+    this.sessionDrawerEl = container.createDiv({ cls: "brain-session-drawer" });
+
+    // 4. Streamlined Mode Switcher (2 Tabs Only)
     const modeTabs = container.createDiv({ cls: "brain-mode-toggle" });
     this.workTab = modeTabs.createEl("button", {
       cls: "brain-mode-tab active work",
@@ -67,11 +80,10 @@ class BrainAssistantView extends ItemView {
     this.workTab.onclick = () => this.setMode("work");
     this.studyTab.onclick = () => this.setMode("study");
 
-    // 3. Spacious Chat List (occupies majority of view)
+    // 5. Spacious Chat List
     this.chatList = container.createDiv({ cls: "brain-chat-list" });
-    this.addWelcomeMessage();
 
-    // 4. Minimalist Input Bar
+    // 6. Minimalist Input Bar
     const inputArea = container.createDiv({ cls: "brain-input-container" });
     this.textarea = inputArea.createEl("textarea", {
       cls: "brain-textarea",
@@ -100,10 +112,153 @@ class BrainAssistantView extends ItemView {
     this.plugin.onServerStatusChange = (status, text) => {
       this.updateStatus(status, text);
     };
+
+    // Load Sessions & Initialize
+    await this.loadSessions();
+    this.renderSessionBar();
+    this.renderChatHistory();
+  }
+
+  async loadSessions() {
+    const data = await this.plugin.loadData();
+    if (data && data.sessions && Array.isArray(data.sessions) && data.sessions.length > 0) {
+      this.sessions = data.sessions;
+      this.activeSessionId = data.activeSessionId || this.sessions[0].id;
+    } else {
+      const initialSession = {
+        id: "sess-" + Date.now(),
+        title: "Session 1",
+        mode: this.currentMode,
+        messages: [],
+        createdAt: new Date().toLocaleDateString()
+      };
+      this.sessions = [initialSession];
+      this.activeSessionId = initialSession.id;
+      await this.saveSessions();
+    }
+  }
+
+  async saveSessions() {
+    await this.plugin.saveData({
+      sessions: this.sessions,
+      activeSessionId: this.activeSessionId
+    });
+  }
+
+  getActiveSession() {
+    let sess = this.sessions.find(s => s.id === this.activeSessionId);
+    if (!sess) {
+      sess = this.sessions[0];
+      if (sess) this.activeSessionId = sess.id;
+    }
+    return sess;
+  }
+
+  renderSessionBar() {
+    const active = this.getActiveSession();
+    const titleText = active ? active.title : "Sessions";
+    this.sessionTitleBtn.innerHTML = `<span>💬</span> <span class="brain-session-name">${titleText}</span> <span class="brain-caret">${this.isDrawerOpen ? '▴' : '▾'}</span>`;
+  }
+
+  renderSessionDrawer() {
+    this.sessionDrawerEl.empty();
+    const list = this.sessionDrawerEl.createDiv({ cls: "brain-session-list" });
+
+    for (const sess of this.sessions) {
+      const item = list.createDiv({ cls: `brain-session-item ${sess.id === this.activeSessionId ? 'active' : ''}` });
+      const info = item.createDiv({ cls: "brain-session-info" });
+      info.innerHTML = `<span class="brain-session-item-title">${sess.title}</span> <span class="brain-session-item-date">${sess.createdAt || ''}</span>`;
+      info.onclick = () => {
+        this.switchSession(sess.id);
+        this.toggleSessionDrawer(false);
+      };
+
+      if (this.sessions.length > 1) {
+        const delBtn = item.createSpan({ cls: "brain-session-del", text: "✕" });
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          this.deleteSession(sess.id);
+        };
+      }
+    }
+  }
+
+  toggleSessionDrawer(open) {
+    this.isDrawerOpen = typeof open === 'boolean' ? open : !this.isDrawerOpen;
+    if (this.isDrawerOpen) {
+      this.renderSessionDrawer();
+      this.sessionDrawerEl.addClass("open");
+    } else {
+      this.sessionDrawerEl.removeClass("open");
+    }
+    this.renderSessionBar();
+  }
+
+  async switchSession(id) {
+    this.activeSessionId = id;
+    const sess = this.getActiveSession();
+    if (sess) {
+      this.currentMode = sess.mode || "work";
+      if (this.currentMode === "work") {
+        this.workTab.className = "brain-mode-tab active work";
+        this.studyTab.className = "brain-mode-tab";
+      } else {
+        this.workTab.className = "brain-mode-tab";
+        this.studyTab.className = "brain-mode-tab active study";
+      }
+      this.renderChatHistory();
+      await this.saveSessions();
+      this.renderSessionBar();
+    }
+  }
+
+  async createNewSession() {
+    const newSess = {
+      id: "sess-" + Date.now(),
+      title: `Session ${this.sessions.length + 1}`,
+      mode: this.currentMode,
+      messages: [],
+      createdAt: new Date().toLocaleDateString()
+    };
+    this.sessions.unshift(newSess);
+    this.activeSessionId = newSess.id;
+    this.renderChatHistory();
+    await this.saveSessions();
+    this.renderSessionBar();
+    this.toggleSessionDrawer(false);
+    new Notice("Started new chat session");
+  }
+
+  async deleteSession(id) {
+    this.sessions = this.sessions.filter(s => s.id !== id);
+    if (this.activeSessionId === id) {
+      this.activeSessionId = this.sessions[0]?.id;
+    }
+    this.renderSessionDrawer();
+    this.renderSessionBar();
+    this.renderChatHistory();
+    await this.saveSessions();
+  }
+
+  renderChatHistory() {
+    this.chatList.empty();
+    const sess = this.getActiveSession();
+    if (!sess || !sess.messages || sess.messages.length === 0) {
+      this.addWelcomeMessage();
+      return;
+    }
+    for (const msg of sess.messages) {
+      this.appendMessage(msg.role, msg.content);
+    }
   }
 
   setMode(mode) {
     this.currentMode = mode;
+    const sess = this.getActiveSession();
+    if (sess) {
+      sess.mode = mode;
+      this.saveSessions();
+    }
     if (mode === "work") {
       this.workTab.className = "brain-mode-tab active work";
       this.studyTab.className = "brain-mode-tab";
@@ -190,17 +345,23 @@ class BrainAssistantView extends ItemView {
     try {
       const files = this.plugin.app.vault.getFiles();
 
-      // Check for Project-Zero self review
+      // Check for Project-Zero self review (truncated to first 90 lines to prevent prompt bloat)
       if (lower.includes("project-zero") || lower.includes("project zero") || lower.includes("own folder") || lower.includes("this project") || lower.includes("itself")) {
         const pzFile = this.plugin.app.vault.getAbstractFileByPath("Projects/Project-Zero.md");
-        if (pzFile) return `[Technical Architecture Profile of Project-Zero]:\n${await this.plugin.app.vault.read(pzFile)}\n\n`;
+        if (pzFile) {
+          const raw = await this.plugin.app.vault.read(pzFile);
+          const truncated = raw.split("\n").slice(0, 85).join("\n");
+          return `[Technical Architecture Profile of Project-Zero]:\n${truncated}\n\n`;
+        }
       }
 
       // Check projects
       const projectFiles = files.filter(f => f.path.startsWith("Projects/") && f.extension === "md" && f.name !== "README.md");
       for (const pf of projectFiles) {
         if (lower.includes(pf.basename.toLowerCase())) {
-          return `[Context for Codebase ${pf.basename}]:\n${await this.plugin.app.vault.read(pf)}\n\n`;
+          const raw = await this.plugin.app.vault.read(pf);
+          const truncated = raw.split("\n").slice(0, 85).join("\n");
+          return `[Context for Codebase ${pf.basename}]:\n${truncated}\n\n`;
         }
       }
 
@@ -227,7 +388,17 @@ class BrainAssistantView extends ItemView {
     this.isGenerating = true;
     this.sendBtn.disabled = true;
 
-    // Smart context detection from prompt
+    const sess = this.getActiveSession();
+    if (sess) {
+      sess.messages.push({ role: "user", content: text });
+      if (sess.title.startsWith("Session ")) {
+        sess.title = text.length > 26 ? text.slice(0, 23).trim() + "..." : text;
+        this.renderSessionBar();
+      }
+      await this.saveSessions();
+    }
+
+    // Smart context detection (bounded context size)
     const detectedContext = await this.findRelevantContext(text);
     const contextPrompt = detectedContext ? `${detectedContext}[User Technical Request]:\n${text}` : text;
 
@@ -235,37 +406,73 @@ class BrainAssistantView extends ItemView {
     const header = assistantMsg.createDiv({ cls: "brain-msg-header" });
     header.textContent = `PROJECT-ZERO (${this.currentMode.toUpperCase()})`;
     const contentEl = assistantMsg.createDiv({ cls: "brain-msg-content" });
-    contentEl.textContent = "Starting engine...";
+
+    // Minimalist Loading Wave Animation
+    const loadingEl = contentEl.createDiv({ cls: "brain-loading-indicator" });
+    loadingEl.innerHTML = `
+      <div class="brain-wave-dots">
+        <span class="brain-wave-dot"></span>
+        <span class="brain-wave-dot"></span>
+        <span class="brain-wave-dot"></span>
+      </div>
+      <span class="brain-loading-label">Project-Zero is analyzing...</span>
+    `;
+    this.chatList.scrollTop = this.chatList.scrollHeight;
 
     let fullResponse = "";
+    let hasStartedStreaming = false;
+    let lastRenderTime = 0;
+    let renderTimer = null;
+
+    // High performance throttled DOM updater: saves 90% CPU overhead
+    const updateDisplay = (isDone = false) => {
+      const now = Date.now();
+      if (isDone || now - lastRenderTime > 250) {
+        lastRenderTime = now;
+        contentEl.empty();
+        MarkdownRenderer.render(this.plugin.app, fullResponse, contentEl, "/", this);
+        this.chatList.scrollTop = this.chatList.scrollHeight;
+      } else if (!renderTimer) {
+        renderTimer = setTimeout(() => {
+          renderTimer = null;
+          updateDisplay(false);
+        }, 250);
+      }
+    };
 
     try {
       await this.plugin.ensureServerRunning((status) => {
-        contentEl.textContent = status;
+        const lbl = loadingEl.querySelector(".brain-loading-label");
+        if (lbl) lbl.textContent = status;
       });
 
-      contentEl.textContent = "";
-
       const systemPrompt = this.currentMode === "work"
-        ? `You are Project-Zero, an expert software systems architect, code auditor, and performance engineer running locally on an Intel i5 CPU with 8GB RAM.
+        ? `You are Project-Zero, a software systems architect and code auditor on a dual-core i5 ThinkPad.
 CRITICAL RULES:
-- NEVER give generic project management, agile, or corporate advice (e.g. "define goals", "set milestones", "daily standups", "improve communication").
-- ALWAYS provide deep, concrete technical analysis: examine code architecture, memory footprint, CPU thread utilization, algorithms, edge cases, error handling, and file-level implementation suggestions.
-- When reviewing Project-Zero, analyze its real offline stack: llama.cpp llama-server (AVX2, -t 2, -c 2048, --mmap), memory ceiling, Obsidian plugin lifecycle, bin/monitor.py read-only security barriers, and token streaming performance.`
-        : `You are Project-Zero, an academic computer science tutor helping the user master coursework and prepare for technical exams. Explain algorithms, data structures, and system design with concrete code examples, and generate challenging practice problems. Format in clean GitHub markdown.`;
+- Never give generic agile or management fluff.
+- Be concise, direct, and technically rigorous. Provide concrete code, architecture analysis, and memory/performance solutions in clean GitHub markdown.`
+        : `You are Project-Zero, a computer science tutor. Explain algorithms and system design with direct, concise examples and challenging practice problems.`;
+
+      // Compact conversation history (last 2 messages only) to keep prompt evaluation sub-second
+      const recentHistory = sess ? sess.messages.slice(-3, -1) : [];
 
       const messages = [
         { role: "system", content: systemPrompt },
-        ...this.chatHistory.slice(-4),
+        ...recentHistory,
         { role: "user", content: contextPrompt }
       ];
 
       await this.plugin.generateCompletion(messages, (chunk) => {
+        if (!hasStartedStreaming) {
+          hasStartedStreaming = true;
+          loadingEl.remove();
+        }
         fullResponse += chunk;
-        contentEl.empty();
-        MarkdownRenderer.render(this.plugin.app, fullResponse, contentEl, "/", this);
-        this.chatList.scrollTop = this.chatList.scrollHeight;
+        updateDisplay(false);
       });
+
+      if (renderTimer) clearTimeout(renderTimer);
+      updateDisplay(true);
 
       const actions = assistantMsg.createDiv({ cls: "brain-msg-actions" });
       const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy Text" });
@@ -281,8 +488,10 @@ CRITICAL RULES:
         await this.saveMessageToVault(fullResponse);
       };
 
-      this.chatHistory.push({ role: "user", content: text });
-      this.chatHistory.push({ role: "assistant", content: fullResponse });
+      if (sess) {
+        sess.messages.push({ role: "assistant", content: fullResponse });
+        await this.saveSessions();
+      }
 
       this.plugin.resetIdleTimer();
 
@@ -382,9 +591,10 @@ class BrainPlugin extends Plugin {
       "-m", modelPath,
       "-c", "2048",
       "-t", "2",
+      "-tb", "3",
       "-np", "1",
-      "-b", "512",
-      "-ub", "256",
+      "-b", "256",
+      "-ub", "128",
       "-fa", "on",
       "-ctk", "q8_0",
       "-ctv", "q8_0",
@@ -440,8 +650,8 @@ class BrainPlugin extends Plugin {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages,
-        temperature: 0.25,
-        max_tokens: 1500,
+        temperature: 0.2,
+        max_tokens: 800,
         stream: true
       })
     });

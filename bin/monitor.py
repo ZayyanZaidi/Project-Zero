@@ -303,7 +303,7 @@ def run_sync():
         model_path = os.path.join(VAULT_DIR, "models", "qwen2.5-3b-instruct-q4_k_m.gguf")
         proc = subprocess.Popen([
             bin_path, "-m", model_path, "-c", "2048", "-t", "2", "-np", "1",
-            "-b", "512", "-ub", "256", "-fa", "on", "-ctk", "q8_0", "-ctv", "q8_0",
+            "-b", "256", "-ub", "128", "-tb", "3", "-fa", "on", "-ctk", "q8_0", "-ctv", "q8_0",
             "--host", "127.0.0.1", "--port", str(port)
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         server_started_by_us = True
