@@ -26,7 +26,6 @@ class BrainAssistantView extends ItemView {
     this.currentMode = "work"; // 'work' or 'study'
     this.chatHistory = [];
     this.isGenerating = false;
-    this.selectedContext = "";
   }
 
   getViewType() {
@@ -46,7 +45,7 @@ class BrainAssistantView extends ItemView {
     container.empty();
     container.addClass("brain-view-container");
 
-    // 1. Compact Header HUD
+    // 1. Clean Top Header
     const header = container.createDiv({ cls: "brain-header" });
     const title = header.createDiv({ cls: "brain-title" });
     title.innerHTML = `<span>⚔️</span> <span>PROJECT-ZERO</span>`;
@@ -54,42 +53,29 @@ class BrainAssistantView extends ItemView {
     this.statusPill = header.createDiv({ cls: "brain-status-pill standby" });
     this.statusPill.innerHTML = `<span class="brain-status-dot"></span> <span class="status-text">Standby</span>`;
 
-    // 2. Streamlined Controls Row
-    const controlsRow = container.createDiv({ cls: "brain-controls-row" });
-    const modeTabs = controlsRow.createDiv({ cls: "brain-mode-toggle" });
-
+    // 2. Streamlined Mode Switcher (2 Tabs Only)
+    const modeTabs = container.createDiv({ cls: "brain-mode-toggle" });
     this.workTab = modeTabs.createEl("button", {
       cls: "brain-mode-tab active work",
-      text: "💻 Projects"
+      text: "💻 Engineering"
     });
     this.studyTab = modeTabs.createEl("button", {
       cls: "brain-mode-tab",
-      text: "📚 Courses"
+      text: "📚 Course Study"
     });
 
     this.workTab.onclick = () => this.setMode("work");
     this.studyTab.onclick = () => this.setMode("study");
 
-    this.contextSelect = controlsRow.createEl("select", { cls: "brain-context-select" });
-    this.contextSelect.onchange = () => {
-      this.selectedContext = this.contextSelect.value;
-      new Notice(`Context: ${this.selectedContext || 'All'}`);
-    };
-    await this.populateContextDropdown();
-
-    // 3. High-Yield Action Chips
-    this.quickActions = container.createDiv({ cls: "brain-quick-actions" });
-    this.renderQuickActions();
-
-    // 4. Chat Message List (Full User-Selectable Text)
+    // 3. Spacious Chat List (occupies majority of view)
     this.chatList = container.createDiv({ cls: "brain-chat-list" });
     this.addWelcomeMessage();
 
-    // 5. Clean Input Bar
+    // 4. Minimalist Input Bar
     const inputArea = container.createDiv({ cls: "brain-input-container" });
     this.textarea = inputArea.createEl("textarea", {
       cls: "brain-textarea",
-      attr: { placeholder: "Ask Project-Zero, audit architecture, or request a course quiz... (Ctrl+Enter)" }
+      attr: { placeholder: "Ask Project-Zero, audit code, or request a quiz... (Ctrl+Enter)" }
     });
 
     this.textarea.addEventListener("keydown", (e) => {
@@ -116,37 +102,7 @@ class BrainAssistantView extends ItemView {
     };
   }
 
-  async populateContextDropdown() {
-    this.contextSelect.empty();
-
-    if (this.currentMode === "work") {
-      this.contextSelect.createEl("option", { text: "📁 All Codebases", value: "" });
-      try {
-        const files = this.plugin.app.vault.getFiles();
-        const projectFiles = files.filter(f => f.path.startsWith("Projects/") && f.extension === "md" && f.name !== "README.md");
-        for (const pf of projectFiles) {
-          this.contextSelect.createEl("option", { text: pf.basename, value: pf.basename });
-        }
-      } catch (e) {
-        console.error("Failed to load projects", e);
-      }
-    } else {
-      this.contextSelect.createEl("option", { text: "📖 Select a Course", value: "" });
-      try {
-        const files = this.plugin.app.vault.getFiles();
-        const syllabusFiles = files.filter(f => f.path.startsWith("Study/Courses/") && f.name === "Syllabus.md");
-        for (const sf of syllabusFiles) {
-          const courseFolder = sf.path.split("/")[2];
-          this.contextSelect.createEl("option", { text: courseFolder, value: courseFolder });
-        }
-      } catch (e) {
-        console.error("Failed to load courses", e);
-      }
-    }
-    this.selectedContext = this.contextSelect.value;
-  }
-
-  async setMode(mode) {
+  setMode(mode) {
     this.currentMode = mode;
     if (mode === "work") {
       this.workTab.className = "brain-mode-tab active work";
@@ -155,79 +111,13 @@ class BrainAssistantView extends ItemView {
       this.workTab.className = "brain-mode-tab";
       this.studyTab.className = "brain-mode-tab active study";
     }
-    await this.populateContextDropdown();
-    this.renderQuickActions();
-    new Notice(`Mode: ${mode === 'work' ? 'Project Engineering Mode' : 'Course Study Mode'}`);
-  }
-
-  renderQuickActions() {
-    this.quickActions.empty();
-    if (this.currentMode === "work") {
-      this.createSyncPill("⚡ Sync Code");
-      this.createActionPill("📋 Technical Review", () => {
-        const target = this.selectedContext ? `for ${this.selectedContext}` : "for Project-Zero";
-        return `Perform a deep technical architectural review ${target}. Analyze code implementation, memory & CPU efficiency, potential bottlenecks, and concrete technical improvements. Do not give generic project management advice.`;
-      });
-      this.createActionPill("🔍 Bug & Edge-Case Audit", () => {
-        const target = this.selectedContext ? `in ${this.selectedContext}` : "in active codebases";
-        return `Audit implementation details and flag specific edge cases, unhandled exceptions, and performance leaks ${target}.`;
-      });
-    } else {
-      this.createActionPill("🎯 3-Q Quiz", () => {
-        const target = this.selectedContext ? `on ${this.selectedContext}` : "on current course syllabus";
-        return `Generate an interactive 3-question multiple-choice quiz ${target} with hidden answers at the bottom.`;
-      });
-      this.createActionPill("📖 Explain Concept", () => {
-        const target = this.selectedContext ? `for ${this.selectedContext}` : "";
-        return `Explain a core theoretical or algorithmic concept ${target} with concrete code snippets.`;
-      });
-      this.createActionPill("⚡ Flashcards", () => {
-        const target = this.selectedContext ? `for ${this.selectedContext}` : "";
-        return `Create a high-yield flashcard set of key exam definitions ${target}.`;
-      });
-    }
-  }
-
-  createActionPill(label, promptGenerator) {
-    const pill = this.quickActions.createEl("button", {
-      cls: "brain-action-pill",
-      text: label
-    });
-    pill.onclick = () => {
-      this.textarea.value = typeof promptGenerator === "function" ? promptGenerator() : promptGenerator;
-      this.handleSend();
-    };
-  }
-
-  createSyncPill(label) {
-    const pill = this.quickActions.createEl("button", {
-      cls: "brain-action-pill sync-btn",
-      text: label
-    });
-    pill.onclick = async () => {
-      new Notice("Running Project & GitHub Monitor scan...");
-      const { exec } = window.require("child_process");
-      const vaultPath = this.plugin.app.vault.adapter.basePath;
-      const scriptPath = `${vaultPath}/bin/monitor.py`;
-
-      this.updateStatus("starting", "Scanning...");
-      exec(`python3 "${scriptPath}"`, async (err, stdout) => {
-        if (err) {
-          new Notice(`Scan notice: ${err.message}`);
-        } else {
-          new Notice("Project scan complete! Updated Projects/ and Suggestions/.");
-        }
-        this.updateStatus("standby", "Standby");
-        await this.populateContextDropdown();
-        this.appendMessage("assistant", "### ⚡ Project Monitor Sync Completed\n\n```\n" + (stdout || "Scan complete - vault notes updated.") + "\n```");
-      });
-    };
+    new Notice(`Mode: ${mode === 'work' ? 'Engineering Mode' : 'Course Study Mode'}`);
   }
 
   addWelcomeMessage() {
     const welcome = this.currentMode === "work"
-      ? "### 💻 Technical Engineering Mode\nSpecialized in code audits, systems architecture, and memory efficiency. Select a codebase above or ask a technical question."
-      : "### 📚 Course Study Mode\nDedicated to coursework and exam prep. Select a course above to generate quizzes, concept breakdowns, or flashcards.";
+      ? "### 💻 Technical Engineering Mode\nSpecialized in code audits, systems architecture, and memory efficiency. Prompt about any project (e.g. *Project-Zero*, *StudyDezk*, *TrashSortAI*)."
+      : "### 📚 Course Study Mode\nDedicated to coursework and exam prep. Prompt about any course (e.g. *CS-Algorithms*, *System-Design*) to generate quizzes or concept breakdowns.";
     this.appendMessage("assistant", welcome);
   }
 
@@ -284,24 +174,48 @@ class BrainAssistantView extends ItemView {
     try {
       const date = new Date().toISOString().split("T")[0];
       const time = new Date().toTimeString().split(" ")[0].replace(/:/g, "-");
-      let filename = "";
+      const folder = this.currentMode === "study" ? "Study/Quick-Notes" : "Suggestions";
+      const filename = `${folder}/${date}-${time}.md`;
 
-      if (this.currentMode === "study" && this.selectedContext) {
-        const subfolder = text.toLowerCase().includes("quiz") ? "Quizzes" : "Notes";
-        filename = `Study/Courses/${this.selectedContext}/${subfolder}/${date}-${time}.md`;
-      } else if (this.currentMode === "study") {
-        filename = `Study/Quick-Notes/${date}-${time}.md`;
-      } else {
-        const projPrefix = this.selectedContext ? `${this.selectedContext}-` : "";
-        filename = `Suggestions/${projPrefix}${date}-${time}.md`;
-      }
-
-      const header = `# Project-Zero Note\n*Mode: ${this.currentMode.toUpperCase()} | Target: ${this.selectedContext || 'General'} | ${new Date().toLocaleString()}*\n\n`;
+      const header = `# Project-Zero Note\n*Mode: ${this.currentMode.toUpperCase()} | ${new Date().toLocaleString()}*\n\n`;
       await this.plugin.app.vault.create(filename, header + text);
-      new Notice(`Note created: ${filename}`);
+      new Notice(`Note saved: ${filename}`);
     } catch (e) {
       new Notice(`Failed to save note: ${e.message}`);
     }
+  }
+
+  async findRelevantContext(text) {
+    const lower = text.toLowerCase();
+    try {
+      const files = this.plugin.app.vault.getFiles();
+
+      // Check for Project-Zero self review
+      if (lower.includes("project-zero") || lower.includes("project zero") || lower.includes("own folder") || lower.includes("this project") || lower.includes("itself")) {
+        const pzFile = this.plugin.app.vault.getAbstractFileByPath("Projects/Project-Zero.md");
+        if (pzFile) return `[Technical Architecture Profile of Project-Zero]:\n${await this.plugin.app.vault.read(pzFile)}\n\n`;
+      }
+
+      // Check projects
+      const projectFiles = files.filter(f => f.path.startsWith("Projects/") && f.extension === "md" && f.name !== "README.md");
+      for (const pf of projectFiles) {
+        if (lower.includes(pf.basename.toLowerCase())) {
+          return `[Context for Codebase ${pf.basename}]:\n${await this.plugin.app.vault.read(pf)}\n\n`;
+        }
+      }
+
+      // Check courses
+      const syllabusFiles = files.filter(f => f.path.startsWith("Study/Courses/") && f.name === "Syllabus.md");
+      for (const sf of syllabusFiles) {
+        const courseName = sf.path.split("/")[2];
+        if (lower.includes(courseName.toLowerCase())) {
+          return `[Course Syllabus for ${courseName}]:\n${await this.plugin.app.vault.read(sf)}\n\n`;
+        }
+      }
+    } catch (e) {
+      console.warn("Context search error", e);
+    }
+    return "";
   }
 
   async handleSend() {
@@ -313,35 +227,9 @@ class BrainAssistantView extends ItemView {
     this.isGenerating = true;
     this.sendBtn.disabled = true;
 
-    // Check if prompt references Project-Zero or if a project is selected
-    let targetProject = this.selectedContext;
-    const lower = text.toLowerCase();
-    if (!targetProject && (lower.includes("project-zero") || lower.includes("project zero") || lower.includes("own folder") || lower.includes("this project") || lower.includes("itself"))) {
-      targetProject = "Project-Zero";
-    }
-
-    let contextPrompt = text;
-    if (this.currentMode === "work" && targetProject) {
-      try {
-        const file = this.plugin.app.vault.getAbstractFileByPath(`Projects/${targetProject}.md`);
-        if (file) {
-          const content = await this.plugin.app.vault.read(file);
-          contextPrompt = `[Technical Architecture Profile of ${targetProject}]:\n${content}\n\n[User Technical Request]:\n${text}`;
-        }
-      } catch (e) {
-        console.warn("Could not read project file", e);
-      }
-    } else if (this.currentMode === "study" && this.selectedContext) {
-      try {
-        const file = this.plugin.app.vault.getAbstractFileByPath(`Study/Courses/${this.selectedContext}/Syllabus.md`);
-        if (file) {
-          const content = await this.plugin.app.vault.read(file);
-          contextPrompt = `[Course Syllabus for ${this.selectedContext}]:\n${content}\n\n[Study Request]:\n${text}`;
-        }
-      } catch (e) {
-        console.warn("Could not read syllabus file", e);
-      }
-    }
+    // Smart context detection from prompt
+    const detectedContext = await this.findRelevantContext(text);
+    const contextPrompt = detectedContext ? `${detectedContext}[User Technical Request]:\n${text}` : text;
 
     const assistantMsg = this.chatList.createDiv({ cls: "brain-msg assistant" });
     const header = assistantMsg.createDiv({ cls: "brain-msg-header" });

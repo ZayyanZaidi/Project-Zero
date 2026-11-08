@@ -1,22 +1,22 @@
 /* ==============================================================================
-   PROJECT-ZERO ASSISTANT - DECLUTTERED SAMURAI ZEN HUD
+   PROJECT-ZERO ASSISTANT - MINIMALIST ZEN COCKPIT (DECLUTTERED)
    ============================================================================== */
 
 .brain-view-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 12px 14px;
-  background: rgba(9, 14, 24, 0.78);
-  backdrop-filter: blur(12px);
+  padding: 14px 16px;
+  background: rgba(7, 11, 20, 0.78);
+  backdrop-filter: blur(14px);
   font-family: var(--font-zen-body);
-  color: #e8dcc4;
+  color: var(--washi-beige-light);
   box-sizing: border-box;
   overflow: hidden;
   border-left: 1px solid rgba(232, 220, 196, 0.12);
 }
 
-/* Minimalist Top HUD */
+/* Minimalist Clean Header */
 .brain-header {
   display: flex;
   justify-content: space-between;
@@ -29,18 +29,19 @@
 .brain-title {
   font-family: var(--font-zen-heading);
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 14px;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 6px;
-  letter-spacing: 0.8px;
+  gap: 8px;
+  letter-spacing: 1.2px;
+  text-shadow: 0 0 10px rgba(232, 220, 196, 0.2);
 }
 
 .brain-status-pill {
   font-family: var(--font-zen-mono);
   font-size: 10.5px;
-  color: #a89a7d;
+  color: var(--washi-beige-muted);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -61,98 +62,58 @@
   background: currentColor;
 }
 
-/* Streamlined Controls Row */
-.brain-controls-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
+/* Minimalist Mode Selector (Only 2 Tabs) */
 .brain-mode-toggle {
   display: flex;
-  background: rgba(13, 20, 34, 0.9);
+  background: rgba(12, 18, 30, 0.85);
   border: 1px solid rgba(232, 220, 196, 0.12);
   border-radius: 6px;
-  padding: 2px;
+  padding: 3px;
+  margin-bottom: 12px;
+  gap: 4px;
 }
 
 .brain-mode-tab {
+  flex: 1;
   background: transparent;
   border: none;
   border-radius: 4px;
-  padding: 4px 8px;
+  padding: 5px 10px;
   font-family: var(--font-zen-heading);
   font-size: 11px;
   font-weight: 600;
-  color: #8c7d60;
+  letter-spacing: 0.5px;
+  color: var(--washi-beige-dark);
   cursor: pointer;
   transition: all 0.2s ease;
+  text-align: center;
+}
+
+.brain-mode-tab:hover {
+  color: var(--washi-beige-light);
 }
 
 .brain-mode-tab.active.work {
   background: rgba(126, 184, 218, 0.18);
   color: #7eb8da;
+  border: 1px solid rgba(126, 184, 218, 0.35);
 }
 
 .brain-mode-tab.active.study {
   background: rgba(217, 78, 52, 0.2);
   color: #ff8b7b;
+  border: 1px solid rgba(217, 78, 52, 0.35);
 }
 
-.brain-context-select {
-  flex: 1;
-  background: rgba(13, 20, 34, 0.9);
-  color: #f7f2e7;
-  border: 1px solid rgba(232, 220, 196, 0.16);
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-family: var(--font-zen-mono);
-  font-size: 11px;
-  outline: none;
-  cursor: pointer;
-}
-
-/* Action Chips */
-.brain-quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-
-.brain-action-pill {
-  background: rgba(13, 20, 34, 0.65);
-  border: 1px solid rgba(232, 220, 196, 0.1);
-  border-radius: 4px;
-  padding: 3px 8px;
-  font-size: 10.5px;
-  font-family: var(--font-zen-mono);
-  color: #a89a7d;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.brain-action-pill:hover {
-  background: rgba(232, 220, 196, 0.12);
-  color: #f7f2e7;
-  border-color: rgba(232, 220, 196, 0.25);
-}
-
-.brain-action-pill.sync-btn {
-  color: #7eb8da;
-  border-color: rgba(126, 184, 218, 0.25);
-}
-
-/* Chat Message List with FULL Text Selection */
+/* Spacious, Breathable Chat Thread */
 .brain-chat-list {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   padding-right: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   user-select: text !important;
   -webkit-user-select: text !important;
 }
@@ -161,35 +122,36 @@
   display: flex;
   flex-direction: column;
   border-radius: 6px;
-  padding: 10px 12px;
-  font-size: 12.5px;
-  line-height: 1.55;
+  padding: 10px 14px;
+  font-family: var(--font-zen-body);
+  font-size: 13.5px;
+  line-height: 1.6;
   animation: fadeIn 0.15s ease;
   user-select: text !important;
   -webkit-user-select: text !important;
 }
 
 .brain-msg.user {
-  background: rgba(20, 28, 44, 0.9);
+  background: rgba(18, 26, 42, 0.88);
   border: 1px solid rgba(232, 220, 196, 0.12);
   align-self: flex-end;
-  max-width: 90%;
-  color: #f7f2e7;
+  max-width: 88%;
+  color: #fff;
 }
 
 .brain-msg.assistant {
-  background: rgba(13, 20, 34, 0.75);
+  background: rgba(10, 16, 26, 0.7);
   border-left: 2px solid var(--washi-beige);
   align-self: flex-start;
   width: 100%;
-  color: #e8dcc4;
+  color: var(--washi-beige-light);
 }
 
 .brain-msg-header {
   font-family: var(--font-zen-heading);
   font-size: 10px;
-  letter-spacing: 0.6px;
-  color: #8c7d60;
+  letter-spacing: 0.8px;
+  color: var(--washi-beige-muted);
   margin-bottom: 6px;
   text-transform: uppercase;
 }
@@ -208,14 +170,14 @@
 .brain-msg-content h1, .brain-msg-content h2, .brain-msg-content h3 {
   font-family: var(--font-zen-heading);
   color: #fff;
-  margin: 6px 0 4px 0;
-  font-size: 1.05em;
+  margin: 8px 0 4px 0;
+  letter-spacing: 0.6px;
 }
 
 .brain-msg-content pre {
-  background: #05070d !important;
-  border: 1px solid rgba(232, 220, 196, 0.1);
-  padding: 8px;
+  background: #04060c !important;
+  border: 1px solid rgba(232, 220, 196, 0.12);
+  padding: 8px 10px;
   border-radius: 5px;
   margin: 6px 0;
   user-select: text !important;
@@ -224,7 +186,7 @@
 
 .brain-msg-content code {
   font-family: var(--font-zen-mono);
-  font-size: 11.5px;
+  font-size: 12px;
   color: #7eb8da;
   user-select: text !important;
   -webkit-user-select: text !important;
@@ -232,28 +194,28 @@
 
 .brain-msg-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   margin-top: 8px;
   padding-top: 6px;
   border-top: 1px solid rgba(232, 220, 196, 0.08);
 }
 
 .brain-btn-mini {
-  background: rgba(232, 220, 196, 0.06);
-  border: 1px solid rgba(232, 220, 196, 0.15);
+  background: transparent;
+  border: 1px solid rgba(232, 220, 196, 0.12);
   border-radius: 3px;
-  color: #e8dcc4;
-  font-family: var(--font-zen-mono);
+  color: var(--washi-beige-muted);
+  font-family: var(--font-zen-ui);
   font-size: 10.5px;
-  padding: 3px 8px;
+  padding: 2px 7px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .brain-btn-mini:hover {
   color: #fff;
-  border-color: rgba(232, 220, 196, 0.4);
-  background: rgba(232, 220, 196, 0.15);
+  border-color: rgba(232, 220, 196, 0.35);
+  background: rgba(232, 220, 196, 0.08);
 }
 
 /* Minimalist Clean Input Bar */
@@ -261,10 +223,10 @@
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  background: rgba(13, 20, 34, 0.95);
-  border: 1px solid rgba(232, 220, 196, 0.16);
+  background: rgba(12, 18, 30, 0.92);
+  border: 1px solid rgba(232, 220, 196, 0.15);
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   transition: border-color 0.2s ease;
 }
 
@@ -279,11 +241,11 @@
   resize: none;
   color: #fff;
   font-family: var(--font-zen-body);
-  font-size: 12.5px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
   outline: none;
-  max-height: 100px;
-  min-height: 38px;
+  max-height: 120px;
+  min-height: 40px;
   padding: 2px 4px;
 }
 
@@ -294,7 +256,8 @@
   font-family: var(--font-zen-heading);
   font-size: 11px;
   font-weight: 700;
-  padding: 6px 12px;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -313,7 +276,7 @@
 
 .brain-btn-stop-subtle {
   background: transparent;
-  border: 1px solid rgba(217, 78, 52, 0.3);
+  border: 1px solid rgba(217, 78, 52, 0.35);
   color: #ff8b7b;
   font-family: var(--font-zen-mono);
   font-size: 10px;
