@@ -1,5 +1,5 @@
 /* ==============================================================================
-   PROJECT-ZERO ASSISTANT - MINIMALIST ZEN COCKPIT (DECLUTTERED)
+   PROJECT-ZERO ASSISTANT - DEEP PRUSSIAN & SAPPHIRE BLUE HUD
    ============================================================================== */
 
 .brain-view-container {
@@ -7,13 +7,13 @@
   flex-direction: column;
   height: 100%;
   padding: 14px 16px;
-  background: rgba(7, 11, 20, 0.78);
+  background: rgba(6, 10, 18, 0.82);
   backdrop-filter: blur(14px);
   font-family: var(--font-zen-body);
-  color: var(--washi-beige-light);
+  color: #cbd5e1;
   box-sizing: border-box;
   overflow: hidden;
-  border-left: 1px solid rgba(232, 220, 196, 0.12);
+  border-left: 1px solid rgba(56, 116, 166, 0.2);
 }
 
 /* Minimalist Clean Header */
@@ -22,7 +22,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(232, 220, 196, 0.14);
+  border-bottom: 1px solid rgba(56, 116, 166, 0.22);
   margin-bottom: 10px;
 }
 
@@ -30,29 +30,29 @@
   font-family: var(--font-zen-heading);
   font-weight: 700;
   font-size: 14px;
-  color: #fff;
+  color: #bfdbfe;
   display: flex;
   align-items: center;
   gap: 8px;
   letter-spacing: 1.2px;
-  text-shadow: 0 0 10px rgba(232, 220, 196, 0.2);
+  text-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
 }
 
 .brain-status-pill {
   font-family: var(--font-zen-mono);
   font-size: 10.5px;
-  color: var(--washi-beige-muted);
+  color: #94a3b8;
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
 .brain-status-pill.active {
-  color: #ff6b6b;
+  color: #38bdf8;
 }
 
 .brain-status-pill.starting {
-  color: #7eb8da;
+  color: #818cf8;
 }
 
 .brain-status-dot {
@@ -62,11 +62,11 @@
   background: currentColor;
 }
 
-/* Minimalist Mode Selector (Only 2 Tabs) */
+/* Mode Switcher - Dark Ocean Tones */
 .brain-mode-toggle {
   display: flex;
-  background: rgba(12, 18, 30, 0.85);
-  border: 1px solid rgba(232, 220, 196, 0.12);
+  background: rgba(10, 17, 32, 0.9);
+  border: 1px solid rgba(56, 116, 166, 0.2);
   border-radius: 6px;
   padding: 3px;
   margin-bottom: 12px;
@@ -83,29 +83,29 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  color: var(--washi-beige-dark);
+  color: #64748b;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
 }
 
 .brain-mode-tab:hover {
-  color: var(--washi-beige-light);
+  color: #cbd5e1;
 }
 
 .brain-mode-tab.active.work {
-  background: rgba(126, 184, 218, 0.18);
-  color: #7eb8da;
-  border: 1px solid rgba(126, 184, 218, 0.35);
+  background: rgba(30, 58, 138, 0.45);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.4);
 }
 
 .brain-mode-tab.active.study {
-  background: rgba(217, 78, 52, 0.2);
-  color: #ff8b7b;
-  border: 1px solid rgba(217, 78, 52, 0.35);
+  background: rgba(14, 116, 144, 0.4);
+  color: #67e8f9;
+  border: 1px solid rgba(6, 182, 212, 0.4);
 }
 
-/* Spacious, Breathable Chat Thread */
+/* Chat Message List with Full Text Selection */
 .brain-chat-list {
   flex: 1;
   overflow-y: auto;
@@ -132,26 +132,26 @@
 }
 
 .brain-msg.user {
-  background: rgba(18, 26, 42, 0.88);
-  border: 1px solid rgba(232, 220, 196, 0.12);
+  background: rgba(15, 26, 48, 0.92);
+  border: 1px solid rgba(59, 130, 246, 0.25);
   align-self: flex-end;
   max-width: 88%;
-  color: #fff;
+  color: #e2e8f0;
 }
 
 .brain-msg.assistant {
-  background: rgba(10, 16, 26, 0.7);
-  border-left: 2px solid var(--washi-beige);
+  background: rgba(8, 14, 26, 0.75);
+  border-left: 2px solid #3b82f6;
   align-self: flex-start;
   width: 100%;
-  color: var(--washi-beige-light);
+  color: #cbd5e1;
 }
 
 .brain-msg-header {
   font-family: var(--font-zen-heading);
   font-size: 10px;
   letter-spacing: 0.8px;
-  color: var(--washi-beige-muted);
+  color: #64748b;
   margin-bottom: 6px;
   text-transform: uppercase;
 }
@@ -169,14 +169,14 @@
 
 .brain-msg-content h1, .brain-msg-content h2, .brain-msg-content h3 {
   font-family: var(--font-zen-heading);
-  color: #fff;
+  color: #93c5fd;
   margin: 8px 0 4px 0;
   letter-spacing: 0.6px;
 }
 
 .brain-msg-content pre {
-  background: #04060c !important;
-  border: 1px solid rgba(232, 220, 196, 0.12);
+  background: #03060c !important;
+  border: 1px solid rgba(56, 116, 166, 0.25);
   padding: 8px 10px;
   border-radius: 5px;
   margin: 6px 0;
@@ -187,7 +187,7 @@
 .brain-msg-content code {
   font-family: var(--font-zen-mono);
   font-size: 12px;
-  color: #7eb8da;
+  color: #38bdf8;
   user-select: text !important;
   -webkit-user-select: text !important;
 }
@@ -197,14 +197,14 @@
   gap: 8px;
   margin-top: 8px;
   padding-top: 6px;
-  border-top: 1px solid rgba(232, 220, 196, 0.08);
+  border-top: 1px solid rgba(56, 116, 166, 0.12);
 }
 
 .brain-btn-mini {
-  background: transparent;
-  border: 1px solid rgba(232, 220, 196, 0.12);
+  background: rgba(30, 58, 138, 0.2);
+  border: 1px solid rgba(56, 116, 166, 0.25);
   border-radius: 3px;
-  color: var(--washi-beige-muted);
+  color: #94a3b8;
   font-family: var(--font-zen-ui);
   font-size: 10.5px;
   padding: 2px 7px;
@@ -213,9 +213,9 @@
 }
 
 .brain-btn-mini:hover {
-  color: #fff;
-  border-color: rgba(232, 220, 196, 0.35);
-  background: rgba(232, 220, 196, 0.08);
+  color: #bfdbfe;
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
 }
 
 /* Minimalist Clean Input Bar */
@@ -223,15 +223,16 @@
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  background: rgba(12, 18, 30, 0.92);
-  border: 1px solid rgba(232, 220, 196, 0.15);
+  background: rgba(10, 17, 32, 0.95);
+  border: 1px solid rgba(56, 116, 166, 0.25);
   border-radius: 6px;
   padding: 6px 10px;
   transition: border-color 0.2s ease;
 }
 
 .brain-input-container:focus-within {
-  border-color: var(--washi-beige);
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
 }
 
 .brain-textarea {
@@ -239,7 +240,7 @@
   background: transparent;
   border: none;
   resize: none;
-  color: #fff;
+  color: #e2e8f0;
   font-family: var(--font-zen-body);
   font-size: 13px;
   line-height: 1.45;
@@ -250,9 +251,9 @@
 }
 
 .brain-btn-send {
-  background: var(--samurai-crimson);
+  background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
   border: none;
-  color: #fff;
+  color: #f0f9ff;
   font-family: var(--font-zen-heading);
   font-size: 11px;
   font-weight: 700;
@@ -260,6 +261,7 @@
   padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.3);
   transition: opacity 0.15s ease;
   white-space: nowrap;
 }
@@ -269,15 +271,16 @@
 }
 
 .brain-btn-send:disabled {
-  background: #1c2434;
-  color: #4a5468;
+  background: #141f32;
+  color: #475569;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .brain-btn-stop-subtle {
   background: transparent;
-  border: 1px solid rgba(217, 78, 52, 0.35);
-  color: #ff8b7b;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
   font-family: var(--font-zen-mono);
   font-size: 10px;
   padding: 4px 6px;

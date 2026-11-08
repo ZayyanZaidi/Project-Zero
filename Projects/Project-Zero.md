@@ -50,3 +50,4 @@
    * Adding an interactive Obsidian checklist/grading component in `Study/Courses/<course>/Quizzes/` so the user can submit answers and get instant feedback.
 5. **AST/Tree-sitter Semantic Diffing:**
    * Replacing raw git file-modification scans in `bin/monitor.py` with function/class signature diffs so the LLM receives semantic code modifications rather than file-level change lists.
+
