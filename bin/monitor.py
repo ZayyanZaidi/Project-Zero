@@ -217,7 +217,7 @@ def query_advisor(prompt: str, port=8080):
             {
                 "role": "system",
                 "content": (
-                    "You are Brain, an offline advisor and project monitor. "
+                    "You are Project-Zero, an offline advisor and project monitor. "
                     "Analyze the given project changes and produce a concise, structured markdown report with:\n"
                     "1. 🎯 Milestone Summary: What was accomplished\n"
                     "2. ⚡ Suggested Next Steps: Top 2-3 actionable tasks\n"
@@ -227,7 +227,7 @@ def query_advisor(prompt: str, port=8080):
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.2,
-        "max_tokens": 450
+        "max_tokens": 800
     }).encode("utf-8")
 
     req = urllib.request.Request(
@@ -303,6 +303,7 @@ def run_sync():
         model_path = os.path.join(VAULT_DIR, "models", "qwen2.5-3b-instruct-q4_k_m.gguf")
         proc = subprocess.Popen([
             bin_path, "-m", model_path, "-c", "2048", "-t", "2", "-np", "1",
+            "-b", "512", "-ub", "256", "-fa", "on", "-ctk", "q8_0", "-ctv", "q8_0",
             "--host", "127.0.0.1", "--port", str(port)
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         server_started_by_us = True

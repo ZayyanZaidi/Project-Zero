@@ -37,6 +37,11 @@ case "${1:-start}" in
       -c "$CTX_SIZE" \
       -t "$THREADS" \
       -np "$PARALLEL" \
+      -b 512 \
+      -ub 256 \
+      -fa on \
+      -ctk q8_0 \
+      -ctv q8_0 \
       --host "$HOST" \
       --port "$PORT"
     ;;

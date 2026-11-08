@@ -383,6 +383,11 @@ class BrainPlugin extends Plugin {
       "-c", "2048",
       "-t", "2",
       "-np", "1",
+      "-b", "512",
+      "-ub", "256",
+      "-fa", "on",
+      "-ctk", "q8_0",
+      "-ctv", "q8_0",
       "--host", "127.0.0.1",
       "--port", `${this.serverPort}`
     ], {
@@ -436,7 +441,7 @@ class BrainPlugin extends Plugin {
       body: JSON.stringify({
         messages,
         temperature: 0.25,
-        max_tokens: 500,
+        max_tokens: 1500,
         stream: true
       })
     });
