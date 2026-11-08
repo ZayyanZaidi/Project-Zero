@@ -394,9 +394,9 @@ def run_sync():
         bin_path = os.path.join(VAULT_DIR, "bin", "llama-server")
         model_path = os.path.join(VAULT_DIR, "models", "qwen2.5-3b-instruct-q4_k_m.gguf")
         proc = subprocess.Popen([
-            bin_path, "-m", model_path, "-c", "2048", "-t", "2", "-np", "1",
-            "-b", "256", "-ub", "128", "-tb", "3", "-fa", "on", "-ctk", "q8_0", "-ctv", "q8_0",
-            "--host", "127.0.0.1", "--port", str(port)
+            bin_path, "-m", model_path, "-c", "1536", "-t", "2", "-np", "1",
+            "-b", "256", "-ub", "128", "-tb", "2", "-fa", "on", "-ctk", "q4_0", "-ctv", "q4_0",
+            "--poll", "0", "--host", "127.0.0.1", "--port", str(port)
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         server_started_by_us = True
 

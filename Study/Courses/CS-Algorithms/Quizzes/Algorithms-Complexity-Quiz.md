@@ -25,3 +25,4 @@ Q3: What algorithmic paradigm does Dijkstra's shortest path algorithm employ?
 - [ ] Backtracking with Pruning
 Explanation: Dijkstra greedily expands the unvisited vertex with the minimum known distance, making an optimal local choice at each step for non-negative edge weights.
 ```
+

@@ -25,3 +25,4 @@ Q3: In a high-traffic microservices architecture, what is the role of a Circuit 
 - [ ] Partitioning MySQL tables by tenant ID
 Explanation: Circuit Breaker tracks failures and fails fast when a threshold is breached, preventing client thread exhaustion while downstream dependencies recover.
 ```
+

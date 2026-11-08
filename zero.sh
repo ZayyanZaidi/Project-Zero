@@ -16,7 +16,7 @@ LLAMA_SERVER_BIN="${LLAMA_SERVER_BIN:-$SCRIPT_DIR/bin/llama-server}"
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-8080}"
 THREADS="${THREADS:-2}"
-CTX_SIZE="${CTX_SIZE:-2048}"
+CTX_SIZE="${CTX_SIZE:-1536}"
 PARALLEL="${PARALLEL:-1}"
 
 case "${1:-start}" in
@@ -39,10 +39,11 @@ case "${1:-start}" in
       -np "$PARALLEL" \
       -b 256 \
       -ub 128 \
-      -tb 3 \
+      -tb 2 \
       -fa on \
-      -ctk q8_0 \
-      -ctv q8_0 \
+      -ctk q4_0 \
+      -ctv q4_0 \
+      --poll 0 \
       --host "$HOST" \
       --port "$PORT"
     ;;

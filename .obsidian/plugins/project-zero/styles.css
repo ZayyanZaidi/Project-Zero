@@ -238,6 +238,32 @@
   text-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
 }
 
+.brain-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brain-btn-free-ram {
+  background: rgba(15, 26, 48, 0.85) !important;
+  border: 1px solid rgba(56, 116, 166, 0.35) !important;
+  border-radius: 4px;
+  color: #93c5fd !important;
+  font-family: var(--font-zen-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: none !important;
+}
+
+.brain-btn-free-ram:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: #ef4444 !important;
+  color: #fca5a5 !important;
+}
+
 .brain-status-pill {
   font-family: var(--font-zen-mono);
   font-size: 10.5px;
@@ -260,6 +286,39 @@
   height: 6px;
   border-radius: 50%;
   background: currentColor;
+}
+
+/* Zero-Lag Streaming Text Container & Animated Cursor */
+.brain-streaming-wrapper {
+  display: block;
+  font-family: var(--font-zen-body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #f8fafc;
+  word-break: break-word;
+  white-space: pre-wrap;
+  user-select: text;
+}
+
+.brain-streaming-text {
+  color: #f8fafc;
+}
+
+.brain-streaming-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background-color: #38bdf8;
+  margin-left: 3px;
+  vertical-align: middle;
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
+  animation: pzBlink 0.75s infinite ease-in-out;
+}
+
+@keyframes pzBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
 }
 
 /* Mode Switcher - Dark Ocean Tones */

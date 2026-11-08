@@ -52,7 +52,17 @@ class BrainAssistantView extends ItemView {
     const title = header.createDiv({ cls: "brain-title" });
     title.innerHTML = `<span>⚔️</span> <span>PROJECT-ZERO</span>`;
 
-    this.statusPill = header.createDiv({ cls: "brain-status-pill standby" });
+    const headerRight = header.createDiv({ cls: "brain-header-right" });
+    const freeRamBtn = headerRight.createEl("button", {
+      cls: "brain-btn-free-ram",
+      text: "⚡ Free RAM",
+      attr: { title: "Stop model server and free RAM immediately" }
+    });
+    freeRamBtn.onclick = () => {
+      this.plugin.stopServer();
+    };
+
+    this.statusPill = headerRight.createDiv({ cls: "brain-status-pill standby" });
     this.statusPill.innerHTML = `<span class="brain-status-dot"></span> <span class="status-text">Standby</span>`;
 
     // 2. Collapsible Session Selector Bar
@@ -440,24 +450,9 @@ class BrainAssistantView extends ItemView {
 
     let fullResponse = "";
     let hasStartedStreaming = false;
-    let lastRenderTime = 0;
-    let renderTimer = null;
-
-    // High performance throttled DOM updater: saves 90% CPU overhead
-    const updateDisplay = (isDone = false) => {
-      const now = Date.now();
-      if (isDone || now - lastRenderTime > 250) {
-        lastRenderTime = now;
-        contentEl.empty();
-        MarkdownRenderer.render(this.plugin.app, fullResponse, contentEl, "/", this);
-        this.chatList.scrollTop = this.chatList.scrollHeight;
-      } else if (!renderTimer) {
-        renderTimer = setTimeout(() => {
-          renderTimer = null;
-          updateDisplay(false);
-        }, 250);
-      }
-    };
+    let streamWrapper = null;
+    let streamTextEl = null;
+    let streamCursor = null;
 
     try {
       await this.plugin.ensureServerRunning((status) => {
@@ -481,17 +476,26 @@ CRITICAL RULES:
         { role: "user", content: contextPrompt }
       ];
 
+      // Zero-lag streaming: text is updated directly in DOM without layout thrashing
       await this.plugin.generateCompletion(messages, (chunk) => {
         if (!hasStartedStreaming) {
           hasStartedStreaming = true;
           loadingEl.remove();
+          streamWrapper = contentEl.createDiv({ cls: "brain-streaming-wrapper" });
+          streamTextEl = streamWrapper.createSpan({ cls: "brain-streaming-text" });
+          streamCursor = streamWrapper.createSpan({ cls: "brain-streaming-cursor" });
         }
         fullResponse += chunk;
-        updateDisplay(false);
+        if (streamTextEl) {
+          streamTextEl.textContent = fullResponse;
+          this.chatList.scrollTop = this.chatList.scrollHeight;
+        }
       });
 
-      if (renderTimer) clearTimeout(renderTimer);
-      updateDisplay(true);
+      // Stream complete: perform ONE single clean Markdown render for full formatting
+      contentEl.empty();
+      MarkdownRenderer.render(this.plugin.app, fullResponse, contentEl, "/", this);
+      this.chatList.scrollTop = this.chatList.scrollHeight;
 
       const actions = assistantMsg.createDiv({ cls: "brain-msg-actions" });
       const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy Text" });
@@ -803,15 +807,16 @@ class BrainPlugin extends Plugin {
 
     this.serverProcess = spawn(binPath, [
       "-m", modelPath,
-      "-c", "2048",
+      "-c", "1536",
       "-t", "2",
-      "-tb", "3",
+      "-tb", "2",
       "-np", "1",
       "-b", "256",
       "-ub", "128",
       "-fa", "on",
-      "-ctk", "q8_0",
-      "-ctv", "q8_0",
+      "-ctk", "q4_0",
+      "-ctv", "q4_0",
+      "--poll", "0",
       "--host", "127.0.0.1",
       "--port", `${this.serverPort}`
     ], {
@@ -855,7 +860,7 @@ class BrainPlugin extends Plugin {
     if (this.idleTimer) clearTimeout(this.idleTimer);
     this.idleTimer = setTimeout(() => {
       this.stopServer();
-    }, 90000);
+    }, 60000);
   }
 
   async generateCompletion(messages, onChunk) {
