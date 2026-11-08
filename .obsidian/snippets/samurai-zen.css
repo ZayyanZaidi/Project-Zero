@@ -36,24 +36,43 @@
   --font-zen-mono: 'Liberation Mono', 'DejaVu Sans Mono', 'Consolas', monospace;
 }
 
-/* Universal Obsidian Transparency Overrides */
-.theme-dark {
+/* Universal Obsidian Transparency Overrides - Strict Dark Sapphire (No White Backgrounds) */
+.theme-dark,
+.theme-light,
+:root,
+body {
   --background-primary: transparent !important;
   --background-primary-alt: transparent !important;
-  --background-secondary: rgba(10, 17, 32, 0.75) !important;
-  --background-secondary-alt: rgba(15, 26, 48, 0.8) !important;
-  --background-modifier-border: var(--border-zen);
+  --background-secondary: rgba(6, 10, 18, 0.85) !important;
+  --background-secondary-alt: rgba(10, 17, 32, 0.9) !important;
+  --background-modifier-border: var(--border-zen) !important;
+  --background-modifier-form-field: rgba(10, 17, 32, 0.9) !important;
+  --background-modifier-cover: rgba(4, 7, 13, 0.85) !important;
 
   --text-normal: #f8fafc !important;
   --text-muted: #cbd5e1 !important;
   --text-faint: #94a3b8 !important;
   --text-accent: #ffffff !important;
 
-  --interactive-accent: var(--zen-sapphire);
-  --interactive-accent-hover: var(--zen-ocean-cyan);
+  --interactive-normal: rgba(15, 26, 48, 0.9) !important;
+  --interactive-hover: rgba(30, 58, 138, 0.6) !important;
+  --interactive-accent: var(--zen-sapphire) !important;
+  --interactive-accent-hover: var(--zen-ocean-cyan) !important;
 
-  --code-normal: var(--zen-ocean-cyan);
-  --code-background: rgba(4, 7, 14, 0.8);
+  --tab-background-active: rgba(10, 17, 32, 0.92) !important;
+  --tab-text-color-active: #ffffff !important;
+
+  --nav-item-color-active: #ffffff !important;
+  --nav-item-background-active: rgba(30, 58, 138, 0.45) !important;
+
+  --titlebar-background: rgba(4, 7, 13, 0.92) !important;
+  --titlebar-background-focused: rgba(4, 7, 13, 0.92) !important;
+  --ribbon-background: rgba(4, 7, 13, 0.9) !important;
+  --ribbon-background-collapsed: rgba(4, 7, 13, 0.9) !important;
+  --divider-color: rgba(56, 116, 166, 0.25) !important;
+
+  --code-normal: var(--zen-ocean-cyan) !important;
+  --code-background: rgba(4, 7, 14, 0.85) !important;
 }
 
 /* Wallpaper Applied to Every Document, View, Split, and Scroller */
@@ -84,24 +103,154 @@ body, .app-container {
   background-attachment: fixed !important;
 }
 
-/* Glassmorphic Ribbons & Titlebars */
+/* Glassmorphic Ribbons, Headers, Titlebars & View Nav (Strict Zero White) */
 .workspace-ribbon,
-.workspace-tab-header-container {
-  background-color: rgba(4, 7, 13, 0.88) !important;
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-zen);
+.workspace-ribbon.mod-left,
+.workspace-ribbon.mod-right,
+.side-dock-ribbon,
+.side-dock-actions {
+  background-color: rgba(4, 7, 13, 0.92) !important;
+  background: rgba(4, 7, 13, 0.92) !important;
+  border-right: 1px solid var(--border-zen) !important;
+}
+
+.side-dock-ribbon-action,
+.clickable-icon {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+}
+
+.side-dock-ribbon-action:hover,
+.clickable-icon:hover {
+  background-color: rgba(30, 58, 138, 0.45) !important;
+  background: rgba(30, 58, 138, 0.45) !important;
+  color: #ffffff !important;
+}
+
+.side-dock-ribbon-action.is-active {
+  background-color: rgba(30, 58, 138, 0.65) !important;
+  background: rgba(30, 58, 138, 0.65) !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Tab Headers and View Header Navigation (Eliminates Blinding White Header Bar) */
+.workspace-tab-header-container,
+.workspace-tab-header-container-inner,
+.workspace-tab-header-tab-list,
+.workspace-tab-container,
+.workspace-tabs,
+.view-header,
+.view-header-title-container,
+.view-header-title,
+.view-actions,
+.view-action {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+.view-header {
+  border-bottom: 1px solid var(--border-zen) !important;
+}
+
+.view-action {
+  color: #cbd5e1 !important;
+}
+
+.view-action:hover {
+  color: #ffffff !important;
+  background: rgba(30, 58, 138, 0.35) !important;
+}
+
+.workspace-tab-header {
+  background: rgba(6, 10, 18, 0.7) !important;
+  border: 1px solid rgba(56, 116, 166, 0.2) !important;
+  color: #cbd5e1 !important;
 }
 
 .workspace-tab-header.is-active {
-  background: rgba(10, 17, 32, 0.85) !important;
+  background: rgba(10, 17, 32, 0.9) !important;
   border-top: 2px solid var(--zen-sapphire) !important;
-  box-shadow: inset 0 2px 8px rgba(59, 130, 246, 0.2);
+  box-shadow: inset 0 2px 8px rgba(59, 130, 246, 0.25) !important;
+  color: #ffffff !important;
 }
 
 .workspace-tab-header-inner-title {
   font-family: var(--font-zen-heading);
   letter-spacing: 0.6px;
   font-size: 12px;
+  color: #ffffff !important;
+}
+
+/* Center Empty State ("New tab" buttons) */
+.empty-state,
+.empty-state-container {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.empty-state-action {
+  background-color: rgba(10, 17, 32, 0.85) !important;
+  background: rgba(10, 17, 32, 0.85) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.empty-state-action:hover {
+  background-color: rgba(30, 58, 138, 0.6) !important;
+  background: rgba(30, 58, 138, 0.6) !important;
+  border-color: #60a5fa !important;
+  color: #ffffff !important;
+}
+
+/* Universal Button Override: STRICTLY NO WHITE BACKGROUNDS */
+button:not(.brain-btn-send),
+.mod-cta,
+input[type="button"],
+input[type="submit"] {
+  background-color: rgba(15, 26, 48, 0.9) !important;
+  background: rgba(15, 26, 48, 0.9) !important;
+  border: 1px solid rgba(59, 130, 246, 0.35) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+button:hover:not(.brain-btn-send),
+input[type="button"]:hover,
+input[type="submit"]:hover {
+  background-color: rgba(30, 58, 138, 0.65) !important;
+  background: rgba(30, 58, 138, 0.65) !important;
+  border-color: #60a5fa !important;
+  color: #ffffff !important;
+}
+
+/* Search, Text Inputs & Menus */
+input[type="text"],
+input[type="search"] {
+  background-color: rgba(6, 10, 18, 0.92) !important;
+  background: rgba(6, 10, 18, 0.92) !important;
+  border: 1px solid rgba(56, 116, 166, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.menu,
+.modal,
+.prompt,
+.popover,
+.suggestion-container {
+  background-color: rgba(6, 10, 18, 0.96) !important;
+  background: rgba(6, 10, 18, 0.96) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+.menu-item:hover,
+.suggestion-item.is-selected {
+  background-color: rgba(30, 58, 138, 0.5) !important;
   color: #ffffff !important;
 }
 
