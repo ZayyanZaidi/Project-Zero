@@ -1,0 +1,25 @@
+{
+  "baseTheme": "dark",
+  "userIgnoreFilters": [
+    "node_modules/**",
+    ".git/**",
+    "venv/**",
+    ".venv/**",
+    "dist/**",
+    "build/**",
+    "bin/**",
+    "models/**",
+    "__pycache__/**",
+    "*.gguf",
+    "*.tar.gz",
+    "*.zip",
+    "*.so*",
+    "*.log"
+  ],
+  "livePreview": true,
+  "showLineNumber": true,
+  "foldHeading": true,
+  "spellcheck": false,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Inbox"
+}

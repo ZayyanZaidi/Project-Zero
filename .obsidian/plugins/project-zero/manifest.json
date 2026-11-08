@@ -1,0 +1,9 @@
+{
+  "id": "project-zero",
+  "name": "Project-Zero Assistant",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Offline local AI assistant with on-demand zero-idle llama-server lifecycle.",
+  "author": "Zayyan Zaidi",
+  "isDesktopOnly": true
+}

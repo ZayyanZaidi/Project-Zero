@@ -1,0 +1,207 @@
+/* ==============================================================================
+   SAMURAI ZEN THEME (PRUSSIAN BLUE & WASHI BEIGE EDITION)
+   ============================================================================== */
+
+:root {
+  /* Midnight Ocean & Prussian Blue Tones */
+  --zen-bg-abyss: #060910;
+  --zen-bg-primary: #080d16;
+  --zen-bg-secondary: #0d1422;
+  --zen-bg-tertiary: #131d30;
+  --zen-bg-elevated: #1a2740;
+
+  /* Antique Washi Parchment & Beige Tones */
+  --washi-beige-light: #f7f3e8;
+  --washi-beige: #e8dcc4;
+  --washi-beige-muted: #c4b699;
+  --washi-beige-dark: #8c7d60;
+
+  /* Accent Elements: Foam Blue & Samurai Vermilion */
+  --zen-foam-blue: #7eb8da;
+  --samurai-crimson: #d94e34;
+  --samurai-crimson-glow: rgba(217, 78, 52, 0.3);
+
+  /* Subtle Borders */
+  --border-zen: rgba(232, 220, 196, 0.12);
+  --border-zen-strong: rgba(232, 220, 196, 0.25);
+
+  /* Typography */
+  --font-zen-heading: 'Cinzel', 'Palatino', 'Baskerville', 'Georgia', serif;
+  --font-zen-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+  --font-zen-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* Base Theme Variables */
+.theme-dark {
+  --background-primary: var(--zen-bg-primary);
+  --background-primary-alt: var(--zen-bg-secondary);
+  --background-secondary: var(--zen-bg-secondary);
+  --background-secondary-alt: var(--zen-bg-tertiary);
+  --background-modifier-border: var(--border-zen);
+
+  --text-normal: var(--washi-beige-light);
+  --text-muted: var(--washi-beige-muted);
+  --text-faint: var(--washi-beige-dark);
+  --text-accent: var(--washi-beige);
+
+  --interactive-accent: var(--samurai-crimson);
+  --interactive-accent-hover: #e55b42;
+
+  --code-normal: var(--zen-foam-blue);
+  --code-background: rgba(6, 9, 16, 0.7);
+}
+
+/* ==============================================================================
+   WALLPAPER VISIBILITY IN EVERY FILE & TAB
+   ============================================================================== */
+
+/* Set transparent backgrounds on all nested editor containers */
+.app-container,
+.horizontal-main-container,
+.workspace,
+.workspace-split,
+.workspace-tabs,
+.workspace-leaf,
+.workspace-leaf-content,
+.view-content,
+.markdown-source-view,
+.markdown-preview-view,
+.cm-scroller,
+.cm-content {
+  background: transparent !important;
+}
+
+/* Fixed Universal Wallpaper on the Root App Background */
+body, .app-container {
+  background-color: var(--zen-bg-primary) !important;
+  background-image: 
+    /* Top-right Rising Sun / Enso Zen Crest */
+    radial-gradient(circle at 86% 16%, rgba(217, 78, 52, 0.14) 0%, rgba(217, 78, 52, 0.04) 140px, transparent 280px),
+    /* Bottom-left Blue Ocean Mist */
+    radial-gradient(circle at 12% 88%, rgba(126, 184, 218, 0.08) 0%, transparent 340px),
+    /* Distinct Japanese Seigaiha (Concentric Waves) Motif */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cg fill='none' stroke='%23e8dcc4' stroke-width='1.2' opacity='0.11'%3E%3Cpath d='M0 40a20 20 0 0 1 40 0M40 40a20 20 0 0 1 40 0'/%3E%3Cpath d='M0 40a28 28 0 0 1 40 0M40 40a28 28 0 0 1 40 0'/%3E%3Cpath d='M0 40a36 36 0 0 1 40 0M40 40a36 36 0 0 1 40 0'/%3E%3Cpath d='M20 20a20 20 0 0 1 40 0'/%3E%3Cpath d='M20 20a28 28 0 0 1 40 0'/%3E%3Cpath d='M20 20a36 36 0 0 1 40 0'/%3E%3C/g%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat, no-repeat, repeat !important;
+  background-attachment: fixed !important;
+  background-position: top right, bottom left, top left !important;
+}
+
+/* Glassmorphic Ribbons & Headers */
+.workspace-ribbon,
+.workspace-tab-header-container {
+  background-color: rgba(6, 9, 16, 0.8) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-zen);
+}
+
+.workspace-tab-header.is-active {
+  background: rgba(13, 20, 34, 0.85) !important;
+  border-top: 2px solid var(--washi-beige) !important;
+  box-shadow: inset 0 2px 8px rgba(232, 220, 196, 0.12);
+}
+
+.workspace-tab-header-inner-title {
+  font-family: var(--font-zen-heading);
+  letter-spacing: 0.5px;
+  font-size: 12px;
+  color: var(--washi-beige-light);
+}
+
+/* File Explorer */
+.nav-folder-title, .nav-file-title {
+  border-radius: 5px;
+  font-family: var(--font-zen-mono);
+  font-size: 12.5px;
+  transition: all 0.2s ease;
+}
+
+.nav-file-title.is-active {
+  background: linear-gradient(90deg, rgba(232, 220, 196, 0.12) 0%, transparent 100%) !important;
+  border-left: 2px solid var(--washi-beige) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.nav-file-title:hover:not(.is-active) {
+  background-color: rgba(232, 220, 196, 0.05);
+  color: #fff;
+}
+
+/* High-Contrast Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-zen-heading) !important;
+  letter-spacing: 0.8px;
+  color: var(--washi-beige-light);
+}
+
+h1 {
+  border-bottom: 1px solid var(--border-zen-strong);
+  padding-bottom: 8px;
+  color: #ffffff;
+  text-shadow: 0 0 16px rgba(232, 220, 196, 0.2);
+}
+
+h2 {
+  color: var(--washi-beige);
+}
+
+h3 {
+  color: var(--zen-foam-blue);
+}
+
+/* Clean Editor Text */
+.markdown-preview-view, .cm-scroller {
+  font-family: var(--font-zen-body);
+  color: var(--washi-beige-light);
+  line-height: 1.65;
+  padding: 24px 36px !important;
+}
+
+/* Code Blocks */
+code, pre {
+  font-family: var(--font-zen-mono) !important;
+  border-radius: 6px;
+}
+
+pre {
+  background-color: rgba(6, 9, 16, 0.75) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-zen) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+}
+
+/* Callouts */
+blockquote, .callout {
+  border-left: 3px solid var(--samurai-crimson) !important;
+  background: linear-gradient(90deg, rgba(217, 78, 52, 0.08) 0%, rgba(232, 220, 196, 0.02) 100%);
+  border-radius: 0 8px 8px 0;
+  color: var(--washi-beige-light);
+}
+
+/* Tables */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid var(--border-zen);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+  background: rgba(13, 20, 34, 0.5);
+}
+
+th {
+  background-color: rgba(19, 29, 48, 0.8) !important;
+  color: var(--washi-beige) !important;
+  font-family: var(--font-zen-heading);
+  letter-spacing: 0.5px;
+  font-size: 12px;
+  border-bottom: 2px solid var(--border-zen-strong);
+  padding: 8px 12px;
+}
+
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(232, 220, 196, 0.06);
+  font-size: 13px;
+}

@@ -1,0 +1,9 @@
+{
+  "baseTheme": "dark",
+  "cssTheme": "",
+  "translucency": false,
+  "nativeMenus": true,
+  "enabledCssSnippets": [
+    "samurai-zen"
+  ]
+}

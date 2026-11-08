@@ -1,0 +1,308 @@
+/* ==============================================================================
+   DECLUTTERED BRAIN COCKPIT - MINIMALIST SAMURAI ZEN
+   ============================================================================== */
+
+.brain-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px 14px;
+  background: rgba(9, 14, 24, 0.75);
+  backdrop-filter: blur(12px);
+  font-family: var(--font-zen-body);
+  color: #e8dcc4;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-left: 1px solid rgba(232, 220, 196, 0.1);
+}
+
+/* Minimalist Top HUD */
+.brain-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(232, 220, 196, 0.12);
+  margin-bottom: 10px;
+}
+
+.brain-title {
+  font-family: var(--font-zen-heading);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.8px;
+}
+
+.brain-status-pill {
+  font-family: var(--font-zen-mono);
+  font-size: 10.5px;
+  color: #a89a7d;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.brain-status-pill.active {
+  color: #ff6b6b;
+}
+
+.brain-status-pill.starting {
+  color: #7eb8da;
+}
+
+.brain-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Streamlined Single-Bar Mode & Context Control */
+.brain-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.brain-mode-toggle {
+  display: flex;
+  background: rgba(13, 20, 34, 0.9);
+  border: 1px solid rgba(232, 220, 196, 0.1);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.brain-mode-tab {
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--font-zen-heading);
+  font-size: 11px;
+  font-weight: 600;
+  color: #8c7d60;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.brain-mode-tab.active.work {
+  background: rgba(126, 184, 218, 0.18);
+  color: #7eb8da;
+}
+
+.brain-mode-tab.active.study {
+  background: rgba(217, 78, 52, 0.2);
+  color: #ff8b7b;
+}
+
+.brain-context-select {
+  flex: 1;
+  background: rgba(13, 20, 34, 0.9);
+  color: #f7f2e7;
+  border: 1px solid rgba(232, 220, 196, 0.14);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-zen-mono);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Subtle Action Chips */
+.brain-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.brain-action-pill {
+  background: rgba(13, 20, 34, 0.6);
+  border: 1px solid rgba(232, 220, 196, 0.08);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-family: var(--font-zen-mono);
+  color: #a89a7d;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.brain-action-pill:hover {
+  background: rgba(232, 220, 196, 0.08);
+  color: #f7f2e7;
+  border-color: rgba(232, 220, 196, 0.2);
+}
+
+.brain-action-pill.sync-btn {
+  color: #7eb8da;
+  border-color: rgba(126, 184, 218, 0.2);
+}
+
+/* Breathable Chat Area */
+.brain-chat-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+  margin-bottom: 10px;
+}
+
+.brain-msg {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  animation: fadeIn 0.15s ease;
+}
+
+.brain-msg.user {
+  background: rgba(20, 28, 44, 0.85);
+  border: 1px solid rgba(232, 220, 196, 0.1);
+  align-self: flex-end;
+  max-width: 90%;
+  color: #f7f2e7;
+}
+
+.brain-msg.assistant {
+  background: rgba(13, 20, 34, 0.7);
+  border-left: 2px solid var(--washi-beige);
+  align-self: flex-start;
+  width: 100%;
+  color: #e8dcc4;
+}
+
+.brain-msg-header {
+  font-family: var(--font-zen-heading);
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: #8c7d60;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.brain-msg-content h1, .brain-msg-content h2, .brain-msg-content h3 {
+  font-family: var(--font-zen-heading);
+  color: #fff;
+  margin: 6px 0 4px 0;
+  font-size: 1.05em;
+}
+
+.brain-msg-content pre {
+  background: #05070d !important;
+  border: 1px solid rgba(232, 220, 196, 0.1);
+  padding: 8px;
+  border-radius: 5px;
+  margin: 6px 0;
+}
+
+.brain-msg-content code {
+  font-family: var(--font-zen-mono);
+  font-size: 11.5px;
+  color: #7eb8da;
+}
+
+.brain-msg-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(232, 220, 196, 0.06);
+}
+
+.brain-btn-mini {
+  background: transparent;
+  border: 1px solid rgba(232, 220, 196, 0.1);
+  border-radius: 3px;
+  color: #8c7d60;
+  font-family: var(--font-zen-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.brain-btn-mini:hover {
+  color: #f7f2e7;
+  border-color: rgba(232, 220, 196, 0.3);
+}
+
+/* Minimalist Clean Input Bar */
+.brain-input-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  background: rgba(13, 20, 34, 0.9);
+  border: 1px solid rgba(232, 220, 196, 0.14);
+  border-radius: 6px;
+  padding: 6px 8px;
+  transition: border-color 0.2s ease;
+}
+
+.brain-input-container:focus-within {
+  border-color: var(--washi-beige);
+}
+
+.brain-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  resize: none;
+  color: #fff;
+  font-family: var(--font-zen-body);
+  font-size: 12.5px;
+  line-height: 1.4;
+  outline: none;
+  max-height: 100px;
+  min-height: 38px;
+  padding: 2px 4px;
+}
+
+.brain-btn-send {
+  background: var(--samurai-crimson);
+  border: none;
+  color: #fff;
+  font-family: var(--font-zen-heading);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.brain-btn-send:hover {
+  opacity: 0.9;
+}
+
+.brain-btn-send:disabled {
+  background: #1c2434;
+  color: #4a5468;
+  cursor: not-allowed;
+}
+
+.brain-btn-stop-subtle {
+  background: transparent;
+  border: 1px solid rgba(217, 78, 52, 0.3);
+  color: #ff8b7b;
+  font-family: var(--font-zen-mono);
+  font-size: 10px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none; /* hidden until engine is running */
+}
+
+.brain-btn-stop-subtle.visible {
+  display: inline-block;
+}

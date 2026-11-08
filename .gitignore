@@ -1,0 +1,34 @@
+# Local environment & secrets
+config.env
+.env
+.env.*
+*.secret
+
+# Obsidian local workspace & cache
+.obsidian/workspace*.json
+.obsidian/cache/
+
+# Large model weights & compiled binaries
+models/
+bin/llama*
+bin/*.so*
+bin/ggml*
+bin/LICENSE
+
+# Temporary logs
+*.log
+chat.log
+embed.log
+server.log
+
+# Python cache & virtualenvs
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Heavy project folders (if nested)
+node_modules/
+dist/
+build/
