@@ -17,6 +17,8 @@ import time
 import subprocess
 import urllib.request
 import urllib.error
+import ast
+import re
 from datetime import datetime
 
 VAULT_DIR = os.path.realpath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -93,6 +95,87 @@ def save_sync_state(state):
     safe_vault_write("Logs/.sync_state.json", json.dumps(state, indent=2))
 
 # ----------------------------------------------------------------------
+# AST & SEMANTIC CODE SIGNATURE DIFFING
+# ----------------------------------------------------------------------
+def extract_python_signatures(source_code: str):
+    """Extracts function and class signatures from Python source using standard library ast."""
+    try:
+        tree = ast.parse(source_code)
+    except Exception:
+        return {}
+
+    signatures = {}
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            args = [a.arg for a in node.args.args]
+            signatures[f"func:{node.name}"] = f"def {node.name}({', '.join(args)})"
+        elif isinstance(node, ast.ClassDef):
+            bases = [b.id for b in node.bases if isinstance(b, ast.Name)]
+            base_str = f"({', '.join(bases)})" if bases else ""
+            signatures[f"class:{node.name}"] = f"class {node.name}{base_str}"
+    return signatures
+
+def extract_js_signatures(source_code: str):
+    """Extracts function and class signatures from JS/TS source using regex."""
+    signatures = {}
+    func_pattern = re.compile(r'(?:export\s+)?(?:async\s+)?function\s+([A-Za-z0-9_$]+)\s*\(([^)]*)\)')
+    for match in func_pattern.finditer(source_code):
+        signatures[f"func:{match.group(1)}"] = f"function {match.group(1)}({match.group(2).strip()})"
+
+    class_pattern = re.compile(r'(?:export\s+)?class\s+([A-Za-z0-9_$]+)(?:\s+extends\s+([A-Za-z0-9_$]+))?')
+    for match in class_pattern.finditer(source_code):
+        base = f" extends {match.group(2)}" if match.group(2) else ""
+        signatures[f"class:{match.group(1)}"] = f"class {match.group(1)}{base}"
+    return signatures
+
+def get_semantic_diff(project_path: str, rel_path: str):
+    """Computes AST/semantic diff of modified functions/classes against git HEAD."""
+    full_path = os.path.join(project_path, rel_path)
+    if not os.path.isfile(full_path):
+        return None
+
+    ext = os.path.splitext(rel_path)[1].lower()
+    if ext not in {".py", ".js", ".ts"}:
+        return None
+
+    try:
+        with open(full_path, "r", encoding="utf-8", errors="replace") as f:
+            curr_code = f.read()
+    except Exception:
+        return None
+
+    try:
+        head_code = subprocess.check_output(
+            ["git", "-C", project_path, "show", f"HEAD:{rel_path}"],
+            stderr=subprocess.DEVNULL, timeout=4
+        ).decode("utf-8", errors="replace")
+    except Exception:
+        head_code = ""
+
+    if ext == ".py":
+        curr_sigs = extract_python_signatures(curr_code)
+        head_sigs = extract_python_signatures(head_code) if head_code else {}
+    else:
+        curr_sigs = extract_js_signatures(curr_code)
+        head_sigs = extract_js_signatures(head_code) if head_code else {}
+
+    added = [v for k, v in curr_sigs.items() if k not in head_sigs]
+    modified = [v for k, v in curr_sigs.items() if k in head_sigs and v != head_sigs[k]]
+    removed = [v for k, v in head_sigs.items() if k not in curr_sigs]
+
+    diff_parts = []
+    if added:
+        diff_parts.append(f"+ Added: {', '.join(added[:5])}")
+    if modified:
+        diff_parts.append(f"~ Modified: {', '.join(modified[:5])}")
+    if removed:
+        diff_parts.append(f"- Removed: {', '.join(removed[:5])}")
+
+    if diff_parts:
+        return f"{rel_path}:\n    " + "\n    ".join(diff_parts)
+    return None
+
+# ----------------------------------------------------------------------
 # READ-ONLY LOCAL PROJECT SCANNER
 # ----------------------------------------------------------------------
 def scan_project(path: str, last_sync_time: float):
@@ -153,6 +236,15 @@ def scan_project(path: str, last_sync_time: float):
 
     if recent_files:
         changes.append(f"Files Modified since last scan: {', '.join(recent_files[:10])}")
+
+        # AST Semantic Diffing on modified code files
+        semantic_diffs = []
+        for rf in recent_files[:8]:
+            sd = get_semantic_diff(path, rf)
+            if sd:
+                semantic_diffs.append(sd)
+        if semantic_diffs:
+            changes.append(f"Semantic Code Diff (AST Functions & Classes):\n" + "\n".join(semantic_diffs))
 
     if not changes:
         return None

@@ -329,12 +329,31 @@ class BrainAssistantView extends ItemView {
     try {
       const date = new Date().toISOString().split("T")[0];
       const time = new Date().toTimeString().split(" ")[0].replace(/:/g, "-");
-      const folder = this.currentMode === "study" ? "Study/Quick-Notes" : "Suggestions";
-      const filename = `${folder}/${date}-${time}.md`;
+      let folder = "Suggestions";
 
+      if (this.currentMode === "study") {
+        const lower = text.toLowerCase();
+        let course = "CS-Algorithms";
+        if (lower.includes("system") || lower.includes("distributed") || lower.includes("cache") || lower.includes("cap") || lower.includes("proxy") || lower.includes("load balanc")) {
+          course = "System-Design";
+        }
+
+        if (lower.includes("quiz") || lower.includes("question") || text.includes("```quiz")) {
+          folder = `Study/Courses/${course}/Quizzes`;
+        } else {
+          folder = `Study/Courses/${course}/Notes`;
+        }
+      }
+
+      // Ensure target folder exists
+      if (!this.plugin.app.vault.getAbstractFileByPath(folder)) {
+        await this.plugin.app.vault.createFolder(folder).catch(() => {});
+      }
+
+      const filename = `${folder}/${date}-${time}.md`;
       const header = `# Project-Zero Note\n*Mode: ${this.currentMode.toUpperCase()} | ${new Date().toLocaleString()}*\n\n`;
       await this.plugin.app.vault.create(filename, header + text);
-      new Notice(`Note saved: ${filename}`);
+      new Notice(`Saved to vault: ${filename}`);
     } catch (e) {
       new Notice(`Failed to save note: ${e.message}`);
     }
@@ -540,9 +559,204 @@ class BrainPlugin extends Plugin {
       callback: () => this.stopServer()
     });
 
+    // Register Interactive Quiz Component for Study/Courses/*/Quizzes/
+    this.registerMarkdownCodeBlockProcessor("quiz", (source, el, ctx) => {
+      this.renderInteractiveQuiz(source, el);
+    });
+
     this.app.workspace.onLayoutReady(() => {
       this.activateView(false);
     });
+  }
+
+  parseQuiz(source) {
+    const questions = [];
+    const blocks = source.split(/\n(?=(?:Q\d*[:.]|\#{1,4}\s*Q|Question\s*\d*[:.]))/i);
+
+    for (const rawBlock of blocks) {
+      const lines = rawBlock.trim().split("\n");
+      if (!lines.length || !lines[0]) continue;
+
+      let questionText = "";
+      let explanation = "";
+      const options = [];
+      let inExplanation = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        if (line.toLowerCase().startsWith("explanation:")) {
+          inExplanation = true;
+          explanation = line.replace(/^explanation:\s*/i, "");
+          continue;
+        }
+
+        if (inExplanation) {
+          explanation += " " + line;
+          continue;
+        }
+
+        if (i === 0 && (line.match(/^(?:Q\d*[:.]|\#{1,4}\s*Q|Question\s*\d*[:.])/i) || !questionText)) {
+          questionText = line.replace(/^(?:Q\d*[:.]|\#{1,4}\s*Q\d*[:.]?|Question\s*\d*[:.]?)\s*/i, "").trim();
+          continue;
+        }
+
+        const checkMatch = line.match(/^[-*]\s*\[([ xX])\]\s*(.*)$/);
+        if (checkMatch) {
+          const isCorrect = checkMatch[1].toLowerCase() === "x" || checkMatch[2].includes("(correct)");
+          const cleanText = checkMatch[2].replace(/\s*\(correct\)\s*/i, "").trim();
+          options.push({ text: cleanText, isCorrect });
+          continue;
+        }
+
+        const letterMatch = line.match(/^([A-Da-d\d])[\).]\s*(.*)$/);
+        if (letterMatch) {
+          const isCorrect = letterMatch[2].includes("(correct)") || letterMatch[2].endsWith("*");
+          const cleanText = letterMatch[2].replace(/\s*\(correct\)|\*/ig, "").trim();
+          options.push({ text: cleanText, isCorrect });
+          continue;
+        }
+
+        if (!questionText) {
+          questionText = line;
+        } else {
+          if (options.length === 0) {
+            questionText += " " + line;
+          }
+        }
+      }
+
+      if (questionText && options.length > 0) {
+        questions.push({
+          question: questionText,
+          options,
+          explanation: explanation.trim()
+        });
+      }
+    }
+
+    return questions;
+  }
+
+  renderInteractiveQuiz(source, el) {
+    const questions = this.parseQuiz(source);
+    if (!questions.length) {
+      el.createEl("div", {
+        cls: "pz-quiz-error",
+        text: "Could not parse quiz format. Write questions starting with 'Q: ...' followed by options with '- [x]' or '- [ ]'."
+      });
+      return;
+    }
+
+    const container = el.createDiv({ cls: "pz-quiz-container" });
+    const header = container.createDiv({ cls: "pz-quiz-header" });
+    header.createEl("span", {
+      cls: "pz-quiz-title",
+      text: `📝 Interactive Self-Grading Quiz (${questions.length} Question${questions.length > 1 ? "s" : ""})`
+    });
+    const scoreBadge = header.createEl("span", { cls: "pz-quiz-score-badge", text: "Ready" });
+
+    const userAnswers = new Map();
+    const questionEls = [];
+
+    questions.forEach((q, qIdx) => {
+      const qCard = container.createDiv({ cls: "pz-quiz-card" });
+      const qTitle = qCard.createDiv({ cls: "pz-quiz-q-title" });
+      qTitle.createEl("span", { cls: "pz-quiz-q-num", text: `Q${qIdx + 1}. ` });
+      qTitle.createEl("span", { text: q.question });
+
+      const optList = qCard.createDiv({ cls: "pz-quiz-options" });
+      const optionButtons = [];
+
+      q.options.forEach((opt, optIdx) => {
+        const optRow = optList.createDiv({ cls: "pz-quiz-option" });
+        const radio = optRow.createEl("span", { cls: "pz-quiz-radio-icon", text: "○" });
+        optRow.createEl("span", { cls: "pz-quiz-opt-text", text: opt.text });
+
+        optRow.onclick = () => {
+          userAnswers.set(qIdx, optIdx);
+          optionButtons.forEach(btn => {
+            btn.row.removeClass("is-selected");
+            btn.radio.textContent = "○";
+          });
+          optRow.addClass("is-selected");
+          radio.textContent = "●";
+        };
+
+        optionButtons.push({ row: optRow, radio, isCorrect: opt.isCorrect });
+      });
+
+      const expEl = qCard.createDiv({ cls: "pz-quiz-explanation" });
+      if (q.explanation) {
+        expEl.createEl("strong", { text: "💡 Explanation: " });
+        expEl.createEl("span", { text: q.explanation });
+      }
+
+      questionEls.push({ qCard, optionButtons, expEl, q });
+    });
+
+    const footer = container.createDiv({ cls: "pz-quiz-footer" });
+    const submitBtn = footer.createEl("button", { cls: "brain-btn-mini pz-quiz-btn", text: "⚡ Check Answers" });
+    const resetBtn = footer.createEl("button", { cls: "brain-btn-mini pz-quiz-btn-reset", text: "🔄 Retry" });
+
+    submitBtn.onclick = () => {
+      let correctCount = 0;
+      questionEls.forEach((qObj, qIdx) => {
+        const userChoice = userAnswers.get(qIdx);
+        qObj.optionButtons.forEach((btn, optIdx) => {
+          btn.row.removeClass("is-correct");
+          btn.row.removeClass("is-wrong");
+          btn.row.removeClass("is-expected");
+          if (btn.isCorrect) {
+            btn.row.addClass("is-expected");
+          }
+          if (userChoice === optIdx) {
+            if (btn.isCorrect) {
+              btn.row.addClass("is-correct");
+              btn.radio.textContent = "✅";
+            } else {
+              btn.row.addClass("is-wrong");
+              btn.radio.textContent = "❌";
+            }
+          }
+        });
+
+        if (userChoice !== undefined && qObj.optionButtons[userChoice]?.isCorrect) {
+          correctCount++;
+        }
+
+        if (qObj.q.explanation) {
+          qObj.expEl.addClass("is-visible");
+        }
+      });
+
+      const pct = Math.round((correctCount / questions.length) * 100);
+      scoreBadge.textContent = `Score: ${correctCount}/${questions.length} (${pct}%)`;
+      if (pct === 100) {
+        scoreBadge.className = "pz-quiz-score-badge perfect";
+      } else if (pct >= 50) {
+        scoreBadge.className = "pz-quiz-score-badge passing";
+      } else {
+        scoreBadge.className = "pz-quiz-score-badge failing";
+      }
+    };
+
+    resetBtn.onclick = () => {
+      userAnswers.clear();
+      scoreBadge.textContent = "Ready";
+      scoreBadge.className = "pz-quiz-score-badge";
+      questionEls.forEach(qObj => {
+        qObj.optionButtons.forEach(btn => {
+          btn.row.removeClass("is-selected");
+          btn.row.removeClass("is-correct");
+          btn.row.removeClass("is-wrong");
+          btn.row.removeClass("is-expected");
+          btn.radio.textContent = "○";
+        });
+        qObj.expEl.removeClass("is-visible");
+      });
+    };
   }
 
   async onunload() {
