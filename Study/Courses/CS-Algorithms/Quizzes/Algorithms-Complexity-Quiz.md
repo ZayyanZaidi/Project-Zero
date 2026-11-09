@@ -1,7 +1,7 @@
-# 📝 Interactive Quiz: Algorithmic Complexity & Data Structures
+# Interactive Quiz: Algorithmic Complexity & Data Structures
 
 > [!TIP] How to Take this Quiz
-> Click any option below to select your answer, then click **⚡ Check Answers** to grade yourself instantly and reveal detailed algorithmic explanations.
+> Click any option below to select your answer, then click **Check Answers** to grade yourself instantly and reveal detailed algorithmic explanations.
 
 ```quiz
 Q1: What is the worst-case time complexity of Standard Quick Sort without randomized pivot selection?

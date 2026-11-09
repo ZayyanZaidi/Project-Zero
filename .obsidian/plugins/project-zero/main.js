@@ -50,12 +50,12 @@ class BrainAssistantView extends ItemView {
     // 1. Clean Top Header
     const header = container.createDiv({ cls: "brain-header" });
     const title = header.createDiv({ cls: "brain-title" });
-    title.innerHTML = `<span>⚔️</span> <span>PROJECT-ZERO</span>`;
+    title.innerHTML = `<span>PROJECT-ZERO</span>`;
 
     const headerRight = header.createDiv({ cls: "brain-header-right" });
     const freeRamBtn = headerRight.createEl("button", {
       cls: "brain-btn-free-ram",
-      text: "⚡ Free RAM",
+      text: "Free RAM",
       attr: { title: "Stop model server and free RAM immediately" }
     });
     freeRamBtn.onclick = () => {
@@ -80,11 +80,11 @@ class BrainAssistantView extends ItemView {
     const modeTabs = container.createDiv({ cls: "brain-mode-toggle" });
     this.workTab = modeTabs.createEl("button", {
       cls: "brain-mode-tab active work",
-      text: "💻 Engineering"
+      text: "Engineering"
     });
     this.studyTab = modeTabs.createEl("button", {
       cls: "brain-mode-tab",
-      text: "📚 Course Study"
+      text: "Course Study"
     });
 
     this.workTab.onclick = () => this.setMode("work");
@@ -109,7 +109,7 @@ class BrainAssistantView extends ItemView {
 
     this.stopBtn = inputArea.createEl("button", {
       cls: "brain-btn-stop-subtle",
-      text: "⏹ Stop"
+      text: "Stop"
     });
     this.stopBtn.onclick = () => this.plugin.stopServer();
 
@@ -167,7 +167,7 @@ class BrainAssistantView extends ItemView {
   renderSessionBar() {
     const active = this.getActiveSession();
     const titleText = active ? active.title : "Sessions";
-    this.sessionTitleBtn.innerHTML = `<span>💬</span> <span class="brain-session-name">${titleText}</span> <span class="brain-caret">${this.isDrawerOpen ? '▴' : '▾'}</span>`;
+    this.sessionTitleBtn.innerHTML = `<span class="brain-session-name">${titleText}</span> <span class="brain-caret">${this.isDrawerOpen ? '[^]' : '[v]'}</span>`;
   }
 
   renderSessionDrawer() {
@@ -184,7 +184,7 @@ class BrainAssistantView extends ItemView {
       };
 
       if (this.sessions.length > 1) {
-        const delBtn = item.createSpan({ cls: "brain-session-del", text: "✕" });
+        const delBtn = item.createSpan({ cls: "brain-session-del", text: "x" });
         delBtn.onclick = (e) => {
           e.stopPropagation();
           this.deleteSession(sess.id);
@@ -281,8 +281,8 @@ class BrainAssistantView extends ItemView {
 
   addWelcomeMessage() {
     const welcome = this.currentMode === "work"
-      ? "### 💻 Technical Engineering Mode\nSpecialized in code audits, systems architecture, and memory efficiency. Prompt about any project (e.g. *Project-Zero*, *StudyDezk*, *TrashSortAI*)."
-      : "### 📚 Course Study Mode\nDedicated to coursework and exam prep. Prompt about any course (e.g. *CS-Algorithms*, *System-Design*) to generate quizzes or concept breakdowns.";
+      ? "### Technical Engineering Mode\nSpecialized in code audits, systems architecture, and memory efficiency. Prompt about any project (e.g. *Project-Zero*, *StudyDezk*, *TrashSortAI*)."
+      : "### Course Study Mode\nDedicated to coursework and exam prep. Prompt about any course (e.g. *CS-Algorithms*, *System-Design*) to generate quizzes or concept breakdowns.";
     this.appendMessage("assistant", welcome);
   }
 
@@ -292,7 +292,7 @@ class BrainAssistantView extends ItemView {
     const textEl = this.statusPill.querySelector(".status-text");
     if (textEl) textEl.textContent = text;
     if (this.plugin.statusBarItem) {
-      this.plugin.statusBarItem.setText(`🧠 Project-Zero: ${text}`);
+      this.plugin.statusBarItem.setText(`Project-Zero: ${text}`);
     }
 
     if (this.stopBtn) {
@@ -315,15 +315,15 @@ class BrainAssistantView extends ItemView {
       MarkdownRenderer.render(this.plugin.app, text, content, "/", this);
       const actions = msg.createDiv({ cls: "brain-msg-actions" });
 
-      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy Text" });
+      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "Copy" });
       copyBtn.onclick = () => {
         copyToClipboard(text);
-        copyBtn.textContent = "✅ Copied!";
-        setTimeout(() => { copyBtn.textContent = "📋 Copy Text"; }, 2000);
+        copyBtn.textContent = "Copied";
+        setTimeout(() => { copyBtn.textContent = "Copy"; }, 2000);
         new Notice("Copied to clipboard!");
       };
 
-      const saveBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "💾 Save Note" });
+      const saveBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "Save Note" });
       saveBtn.onclick = async () => {
         await this.saveMessageToVault(text);
       };
@@ -503,15 +503,15 @@ CRITICAL RULES:
       this.chatList.scrollTop = this.chatList.scrollHeight;
 
       const actions = assistantMsg.createDiv({ cls: "brain-msg-actions" });
-      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "📋 Copy Text" });
+      const copyBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "Copy" });
       copyBtn.onclick = () => {
         copyToClipboard(fullResponse);
-        copyBtn.textContent = "✅ Copied!";
-        setTimeout(() => { copyBtn.textContent = "📋 Copy Text"; }, 2000);
+        copyBtn.textContent = "Copied";
+        setTimeout(() => { copyBtn.textContent = "Copy"; }, 2000);
         new Notice("Copied to clipboard!");
       };
 
-      const saveBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "💾 Save Note" });
+      const saveBtn = actions.createEl("button", { cls: "brain-btn-mini", text: "Save Note" });
       saveBtn.onclick = async () => {
         await this.saveMessageToVault(fullResponse);
       };
@@ -541,12 +541,12 @@ class BrainPlugin extends Plugin {
 
     this.registerView(BRAIN_VIEW_TYPE, (leaf) => new BrainAssistantView(leaf, this));
 
-    this.addRibbonIcon("brain", "Project-Zero Cockpit", () => {
+    this.addRibbonIcon("terminal", "Project-Zero Cockpit", () => {
       this.activateView(false);
     });
 
     this.statusBarItem = this.addStatusBarItem();
-    this.statusBarItem.setText("🧠 Project-Zero: Standby");
+    this.statusBarItem.setText("Project-Zero: Standby");
     this.statusBarItem.addClass("mod-clickable");
     this.statusBarItem.onclick = () => this.activateView(false);
 
@@ -662,7 +662,7 @@ class BrainPlugin extends Plugin {
     const header = container.createDiv({ cls: "pz-quiz-header" });
     header.createEl("span", {
       cls: "pz-quiz-title",
-      text: `📝 Interactive Self-Grading Quiz (${questions.length} Question${questions.length > 1 ? "s" : ""})`
+      text: `Interactive Quiz (${questions.length} Question${questions.length > 1 ? "s" : ""})`
     });
     const scoreBadge = header.createEl("span", { cls: "pz-quiz-score-badge", text: "Ready" });
 
@@ -680,17 +680,17 @@ class BrainPlugin extends Plugin {
 
       q.options.forEach((opt, optIdx) => {
         const optRow = optList.createDiv({ cls: "pz-quiz-option" });
-        const radio = optRow.createEl("span", { cls: "pz-quiz-radio-icon", text: "○" });
+        const radio = optRow.createEl("span", { cls: "pz-quiz-radio-icon", text: "[ ]" });
         optRow.createEl("span", { cls: "pz-quiz-opt-text", text: opt.text });
 
         optRow.onclick = () => {
           userAnswers.set(qIdx, optIdx);
           optionButtons.forEach(btn => {
             btn.row.removeClass("is-selected");
-            btn.radio.textContent = "○";
+            btn.radio.textContent = "[ ]";
           });
           optRow.addClass("is-selected");
-          radio.textContent = "●";
+          radio.textContent = "[*]";
         };
 
         optionButtons.push({ row: optRow, radio, isCorrect: opt.isCorrect });
@@ -698,7 +698,7 @@ class BrainPlugin extends Plugin {
 
       const expEl = qCard.createDiv({ cls: "pz-quiz-explanation" });
       if (q.explanation) {
-        expEl.createEl("strong", { text: "💡 Explanation: " });
+        expEl.createEl("strong", { text: "Explanation: " });
         expEl.createEl("span", { text: q.explanation });
       }
 
@@ -706,8 +706,8 @@ class BrainPlugin extends Plugin {
     });
 
     const footer = container.createDiv({ cls: "pz-quiz-footer" });
-    const submitBtn = footer.createEl("button", { cls: "brain-btn-mini pz-quiz-btn", text: "⚡ Check Answers" });
-    const resetBtn = footer.createEl("button", { cls: "brain-btn-mini pz-quiz-btn-reset", text: "🔄 Retry" });
+    const submitBtn = footer.createEl("button", { cls: "brain-btn-mini pz-quiz-btn", text: "Check Answers" });
+    const resetBtn = footer.createEl("button", { cls: "brain-btn-mini pz-quiz-btn-reset", text: "Retry" });
 
     submitBtn.onclick = () => {
       let correctCount = 0;
@@ -723,10 +723,10 @@ class BrainPlugin extends Plugin {
           if (userChoice === optIdx) {
             if (btn.isCorrect) {
               btn.row.addClass("is-correct");
-              btn.radio.textContent = "✅";
+              btn.radio.textContent = "[Correct]";
             } else {
               btn.row.addClass("is-wrong");
-              btn.radio.textContent = "❌";
+              btn.radio.textContent = "[Incorrect]";
             }
           }
         });
@@ -761,7 +761,7 @@ class BrainPlugin extends Plugin {
           btn.row.removeClass("is-correct");
           btn.row.removeClass("is-wrong");
           btn.row.removeClass("is-expected");
-          btn.radio.textContent = "○";
+          btn.radio.textContent = "[ ]";
         });
         qObj.expEl.removeClass("is-visible");
       });
@@ -865,7 +865,7 @@ class BrainPlugin extends Plugin {
     if (this.idleTimer) clearTimeout(this.idleTimer);
     this.idleTimer = setTimeout(() => {
       this.stopServer();
-    }, 60000);
+    }, 45000);
   }
 
   async generateCompletion(messages, onChunk) {

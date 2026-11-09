@@ -4,7 +4,7 @@
 
 ---
 
-## 🏛 System Architecture & Stack
+## System Architecture & Stack
 
 ### 1. Hardware Constraint & Platform
 * **Target Device:** Lenovo ThinkPad X250
@@ -16,18 +16,19 @@
 * **Engine:** `llama.cpp` official precompiled AVX2 `llama-server` binary (`bin/llama-server`).
 * **Active Model:** `Qwen 2.5 3B Instruct` (`Q4_K_M` quantization, 2,104,932,768 bytes on disk).
 * **Low-RAM Runtime Flags:**
-  * `-t 2`: Compute pinned to 2 threads matching physical CPU cores to eliminate hyperthread contention and thermal throttling.
-  * `-c 2048`: Context window restricted to 2048 tokens to keep KV cache memory footprint under ~280 MB RAM.
+  * `-t 2 -tb 2`: Compute pinned strictly to 2 physical CPU cores to eliminate hyperthread contention and thermal throttling.
+  * `-c 1536`: Context window restricted to 1536 tokens.
+  * `-ctk q4_0 -ctv q4_0`: 4-bit KV cache quantization reducing KV memory footprint to ~75 MB.
+  * `--poll 0`: Disables spin-wait thread polling, eliminating idle CPU usage.
   * `-np 1`: Single concurrent processing slot to prevent memory duplication spikes.
-  * `--mmap`: OS kernel memory-mapping enabled for instantaneous paging.
   * `--host 127.0.0.1 --port 8080`: Local OpenAI-compatible REST API loopback.
 
 ### 3. Native Obsidian Assistant Integration
 * **Plugin:** Vanilla JavaScript Obsidian plugin (`.obsidian/plugins/project-zero/main.js`).
 * **Zero-Idle Lifecycle:**
   * Auto-spawns `llama-server` on prompt submission via Node `child_process.spawn`.
-  * Streams tokens live into Obsidian using Server-Sent Events (`res.body.getReader()`).
-  * Enforces a 90-second idle auto-shutdown timer (`pkill -f llama-server`) that releases all 2.2 GB of RAM as soon as user is idle.
+  * Streams tokens live into Obsidian using direct DOM text updates (`textContent`) with zero layout thrashing, rendering full Markdown once upon completion.
+  * Enforces a 45-second idle auto-shutdown timer (`pkill -f llama-server`) and provides a manual `Free RAM` header button.
   * Kills child processes unconditionally on Obsidian window unload (`onunload`).
 
 ### 4. Codebase Monitoring & Security Boundary
@@ -39,7 +40,7 @@
 
 ---
 
-## 🔍 Technical Improvements & Code Opportunities (Status: All Implemented)
+## Technical Improvements & Code Opportunities (Status: All Implemented)
 
 1. **llama-server KV Cache Compression: [IMPLEMENTED]**
    * Configured `--ctk q8_0 --ctv q8_0` flags in `main.js`, `zero.sh`, and `bin/monitor.py`.

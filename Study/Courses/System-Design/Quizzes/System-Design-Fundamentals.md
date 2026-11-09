@@ -1,7 +1,7 @@
-# 📝 Interactive Quiz: System Design & Distributed Systems
+# Interactive Quiz: System Design & Distributed Systems
 
 > [!TIP] How to Take this Quiz
-> Click any option below to select your answer, then click **⚡ Check Answers** to grade yourself instantly and reveal detailed architectural explanations.
+> Click any option below to select your answer, then click **Check Answers** to grade yourself instantly and reveal detailed architectural explanations.
 
 ```quiz
 Q1: What is the primary operational trade-off defined by the CAP Theorem in a network-partitioned distributed database?
