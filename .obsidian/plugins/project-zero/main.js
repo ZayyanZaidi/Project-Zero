@@ -384,12 +384,17 @@ class BrainAssistantView extends ItemView {
         }
       }
 
-      // Check projects
+      // Check projects with resilient fuzzy normalization
+      const cleanInput = lower.replace(/[^a-z0-9]/g, "");
       const projectFiles = files.filter(f => f.path.startsWith("Projects/") && f.extension === "md" && f.name !== "README.md");
       for (const pf of projectFiles) {
-        if (lower.includes(pf.basename.toLowerCase())) {
+        const baseName = pf.basename.toLowerCase();
+        const cleanBase = baseName.replace(/[^a-z0-9]/g, "");
+        const coreName = baseName.replace(/\s*\(\d+\)/g, "").replace(/[^a-z0-9]/g, "");
+
+        if (lower.includes(baseName) || cleanInput.includes(cleanBase) || (coreName.length >= 3 && cleanInput.includes(coreName))) {
           const raw = await this.plugin.app.vault.read(pf);
-          const truncated = raw.split("\n").slice(0, 85).join("\n");
+          const truncated = raw.split("\n").slice(0, 95).join("\n");
           return `[Context for Codebase ${pf.basename}]:\n${truncated}\n\n`;
         }
       }
