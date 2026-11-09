@@ -4,6 +4,7 @@
 > **Mode:** Offline Local Engine | **Model:** Qwen 2.5 3B (Q4_K_M)
 > **Engine State:** Auto-Start on Demand / Standby on Idle (0 MB RAM)
 > **Distinction:** **Projects** (Codebase monitoring) vs **Courses** (Exam & syllabus prep).
+> **Documentation:** [[USER_GUIDE|Complete Setup & User Guide]]
 
 ---
 

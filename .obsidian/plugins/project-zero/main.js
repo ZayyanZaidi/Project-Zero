@@ -53,6 +53,15 @@ class BrainAssistantView extends ItemView {
     title.innerHTML = `<span>PROJECT-ZERO</span>`;
 
     const headerRight = header.createDiv({ cls: "brain-header-right" });
+    const guideBtn = headerRight.createEl("button", {
+      cls: "brain-btn-free-ram",
+      text: "Guide",
+      attr: { title: "Open Project-Zero User Guide" }
+    });
+    guideBtn.onclick = () => {
+      this.plugin.openUserGuide();
+    };
+
     const freeRamBtn = headerRight.createEl("button", {
       cls: "brain-btn-free-ram",
       text: "Free RAM",
@@ -111,7 +120,13 @@ class BrainAssistantView extends ItemView {
       cls: "brain-btn-stop-subtle",
       text: "Stop"
     });
-    this.stopBtn.onclick = () => this.plugin.stopServer();
+    this.stopBtn.onclick = () => {
+      if (this.isGenerating) {
+        this.plugin.abortGeneration();
+      } else {
+        this.plugin.stopServer();
+      }
+    };
 
     this.sendBtn = inputArea.createEl("button", {
       cls: "brain-btn-send",
@@ -524,7 +539,18 @@ CRITICAL RULES:
       this.plugin.resetIdleTimer();
 
     } catch (err) {
-      contentEl.textContent = `[Error: ${err.message}]`;
+      if (err.name === "AbortError") {
+        contentEl.empty();
+        const stoppedText = fullResponse ? `${fullResponse}\n\n*(Generation stopped)*` : "*(Generation cancelled)*";
+        MarkdownRenderer.render(this.plugin.app, stoppedText, contentEl, "/", this);
+        if (fullResponse && sess) {
+          sess.messages.push({ role: "assistant", content: fullResponse });
+          await this.saveSessions();
+        }
+        this.plugin.resetIdleTimer();
+      } else {
+        contentEl.textContent = `[Error: ${err.message}]`;
+      }
     } finally {
       this.isGenerating = false;
       this.sendBtn.disabled = false;
@@ -538,6 +564,7 @@ class BrainPlugin extends Plugin {
     this.idleTimer = null;
     this.serverPort = 8080;
     this.onServerStatusChange = null;
+    this.abortController = null;
 
     this.registerView(BRAIN_VIEW_TYPE, (leaf) => new BrainAssistantView(leaf, this));
 
@@ -560,6 +587,12 @@ class BrainPlugin extends Plugin {
       id: "open-brain-tab",
       name: "Open Project-Zero in Main Tab",
       callback: () => this.activateView(true)
+    });
+
+    this.addCommand({
+      id: "open-brain-user-guide",
+      name: "Open Project-Zero User Guide",
+      callback: () => this.openUserGuide()
     });
 
     this.addCommand({
@@ -772,6 +805,28 @@ class BrainPlugin extends Plugin {
     this.stopServer();
   }
 
+  async openUserGuide() {
+    const { workspace, vault } = this.app;
+    let guideFile = vault.getAbstractFileByPath("USER_GUIDE.md");
+    if (!guideFile) {
+      guideFile = vault.getAbstractFileByPath("README.md");
+    }
+    if (guideFile) {
+      const leaf = workspace.getLeaf(false);
+      await leaf.openFile(guideFile);
+    } else {
+      new Notice("USER_GUIDE.md not found in vault root.");
+    }
+  }
+
+  abortGeneration() {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+      new Notice("Generation stopped.");
+    }
+  }
+
   async activateView(inMainTab = false) {
     const { workspace } = this.app;
     let leaf = workspace.getLeavesOfType(BRAIN_VIEW_TYPE)[0];
@@ -806,9 +861,23 @@ class BrainPlugin extends Plugin {
     if (onProgress) onProgress("Starting engine on CPU (~6-8s)...");
 
     const { spawn } = window.require("child_process");
+    const fs = window.require("fs");
+    const path = window.require("path");
     const vaultPath = this.app.vault.adapter.basePath;
-    const binPath = `${vaultPath}/bin/llama-server`;
-    const modelPath = `${vaultPath}/models/qwen2.5-3b-instruct-q4_k_m.gguf`;
+    const isWin = process.platform === "win32";
+    const binName = isWin ? "llama-server.exe" : "llama-server";
+    const binPath = path.join(vaultPath, "bin", binName);
+
+    let modelPath = path.join(vaultPath, "models", "qwen2.5-3b-instruct-q4_k_m.gguf");
+    if (!fs.existsSync(modelPath)) {
+      const modelsDir = path.join(vaultPath, "models");
+      if (fs.existsSync(modelsDir)) {
+        const ggufFiles = fs.readdirSync(modelsDir).filter(f => f.toLowerCase().endsWith(".gguf"));
+        if (ggufFiles.length > 0) {
+          modelPath = path.join(modelsDir, ggufFiles[0]);
+        }
+      }
+    }
 
     this.serverProcess = spawn(binPath, [
       "-m", modelPath,
@@ -844,6 +913,7 @@ class BrainPlugin extends Plugin {
   }
 
   stopServer() {
+    this.abortGeneration();
     if (this.idleTimer) {
       clearTimeout(this.idleTimer);
       this.idleTimer = null;
@@ -851,7 +921,11 @@ class BrainPlugin extends Plugin {
 
     try {
       const { exec } = window.require("child_process");
-      exec("pkill -f llama-server");
+      if (process.platform === "win32") {
+        exec("taskkill /F /IM llama-server.exe");
+      } else {
+        exec("pkill -f llama-server");
+      }
     } catch (e) {
       console.error("Error stopping server:", e);
     }
@@ -869,9 +943,11 @@ class BrainPlugin extends Plugin {
   }
 
   async generateCompletion(messages, onChunk) {
+    this.abortController = new AbortController();
     const res = await fetch(`http://127.0.0.1:${this.serverPort}/v1/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: this.abortController.signal,
       body: JSON.stringify({
         messages,
         temperature: 0.2,
